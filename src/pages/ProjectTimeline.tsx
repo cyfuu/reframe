@@ -1,61 +1,125 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChangelogCard } from '../components/ChangelogCard';
-import { CurationModal } from '../components/CurationModal';
-import type { Changelog } from '../types';
-
-const mockLogs: Changelog[] = [
-  { 
-    id: '1', 
-    tag: '🚀 Feature', 
-    date: 'March 26, 2026', 
-    commitHash: '#a1b2c3d', 
-    title: 'Implemented Dark Mode', 
-    description: 'Reframed the color palette to support a native dark mode. This required overhauling our entire CSS variable structure.\n\n### What changed:\n* Removed all `bg-white` hardcoded values.\n* Implemented the `@tailwindcss/typography` plugin.\n\n```javascript\n// The new theme config\nexport const theme = "dark";\nconsole.log("Dark mode active!");\n```' 
-  },
-  { id: '2', tag: '🐛 Bugfix', date: 'March 24, 2026', commitHash: '#f9e8d7c', title: 'Fixed routing issue', description: 'Resolved a bug where refreshing caused a 404.' }
-];
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 export function ProjectTimeline() {
-  const { id } = useParams();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { id } = useParams<{ id: string }>(); 
+  const { user } = useAuth(); 
+  
+  const [project, setProject] = useState<any>(null);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      fetchProjectAndLogs();
+    }
+  }, [id]);
+
+  async function fetchProjectAndLogs() {
+    setIsLoading(true);
+    
+    const { data: projectData, error: projectError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (projectError) {
+      console.error('Error fetching project:', projectError.message);
+      setIsLoading(false);
+      return;
+    }
+
+    setProject(projectData);
+
+    const { data: logsData, error: logsError } = await supabase
+      .from('logs')
+      .select('*')
+      .eq('project_id', id)
+      .order('date', { ascending: false });
+
+    if (!logsError && logsData) {
+      setLogs(logsData);
+    }
+
+    setIsLoading(false);
+  }
+
+  if (isLoading) {
+    return <div className="text-center text-gray-500 py-12 animate-pulse">Loading timeline...</div>;
+  }
+
+  if (!project) {
+    return <div className="text-center text-red-400 py-12">Project not found.</div>;
+  }
 
   return (
-    <div className="w-full max-w-2xl flex flex-col">
-      <Link 
-        to="/"
-        className="text-gray-500 hover:text-white self-start mb-8 text-sm flex items-center gap-2 transition-colors"
-      >
-        ← Back to Projects
-      </Link>
-
-      {/* Header */}
-      <div className="mb-12 flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold mb-2 tracking-tight">Project {id} Changelog</h1>
-          <p className="text-gray-500">A timeline of recent updates.</p>
-        </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600/10 text-blue-400 border border-blue-600/30 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/20 transition-colors"
-        >
-          + Draft Log
-        </button>
-      </div>
-
-      {/* Timeline */}
-      <div className="relative border-l border-gray-800 ml-3 md:ml-4 space-y-12 pb-8">
-        {mockLogs.map((log) => (
-          <div key={log.id} className="relative pl-8 md:pl-10">
-            <span className="absolute -left-[5px] top-6 h-2.5 w-2.5 rounded-full bg-gray-600 ring-4 ring-black" />
-            <ChangelogCard data={log} />
+    <div className="w-full max-w-3xl mx-auto">
+      {/* Header Section */}
+      <div className="mb-10">
+        <Link to="/" className="text-gray-500 hover:text-white transition-colors text-sm mb-4 inline-block">
+          ← Back to Dashboard
+        </Link>
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 text-white">{project.name}</h1>
+            <a 
+              href={`https://github.com/${project.repo_url}`} 
+              target="_blank" 
+              rel="noreferrer"
+              className="text-blue-400 hover:underline text-sm"
+            >
+              github.com/{project.repo_url}
+            </a>
           </div>
-        ))}
+          
+          {/* Admin Magic: The button to write a new log */}
+          {user && (
+            <Link 
+              to={`/project/${project.id}/write`}
+              className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+            >
+              + Add Changelog
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* Render the Modal */}
-      <CurationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
+      {/* Timeline Section */}
+      <div className="space-y-8">
+        {logs.length === 0 ? (
+          <div className="text-center border border-dashed border-gray-800 rounded-xl py-12 px-4">
+            <h3 className="text-lg font-medium text-white mb-2">No changelogs yet</h3>
+            {/* Dynamic Empty State based on who is viewing */}
+            {user ? (
+              <p className="text-gray-500 text-sm">Click "+ Add Changelog" above to draft your first release note.</p>
+            ) : (
+              <p className="text-gray-500 text-sm">The developer hasn't published any updates for this project yet. Check back soon!</p>
+            )}
+          </div>
+        ) : (
+          logs.map((log) => (
+            <div key={log.id} className="border-l-2 border-gray-800 pl-6 relative ml-3">
+              <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+              
+              <span className="text-sm text-gray-400 font-mono block mb-2">
+                {new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                <span className="mx-2">•</span>
+                {log.version}
+              </span>
+              
+              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2">
+                <h2 className="text-xl font-bold text-white mb-3">{log.title}</h2>
+                <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap">
+                  {log.content}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
