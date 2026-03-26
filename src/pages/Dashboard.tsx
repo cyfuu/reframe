@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { ProjectCard } from '../components/ProjectCard';
 import { supabase } from '../lib/supabase';
 import type { Project } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Dashboard() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Fetch data as soon as the component loads
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -51,9 +52,11 @@ export function Dashboard() {
         </div>
         
         <div className="flex gap-3">
-          <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors">
-            + New Project
-          </button>
+          {user && (
+            <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+              + New Project
+            </button>
+          )}
         </div>
       </div>
 
