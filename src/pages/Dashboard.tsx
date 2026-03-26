@@ -4,11 +4,13 @@ import { ProjectCard } from '../components/ProjectCard';
 import { supabase } from '../lib/supabase';
 import type { Project } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { NewProjectModal } from '../components/NewProjectModal';
 
 export function Dashboard() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -53,7 +55,10 @@ export function Dashboard() {
         
         <div className="flex gap-3">
           {user && (
-            <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+            <button 
+              onClick={() => setIsModalOpen(true)} 
+              className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+            >
               + New Project
             </button>
           )}
@@ -77,6 +82,13 @@ export function Dashboard() {
           ))}
         </div>
       )}
+
+      <NewProjectModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchProjects} 
+        existingProjects={projects}
+      />
     </div>
   );
 }
