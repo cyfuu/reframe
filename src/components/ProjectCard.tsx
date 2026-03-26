@@ -1,4 +1,3 @@
-// src/components/ProjectCard.tsx
 import type { Project } from '../types';
 
 interface Props {
