@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChangelogCard } from '../components/ChangelogCard';
+import { CurationModal } from '../components/CurationModal';
 import type { Changelog } from '../types';
 
 const mockLogs: Changelog[] = [
@@ -8,8 +10,8 @@ const mockLogs: Changelog[] = [
 ];
 
 export function ProjectTimeline() {
-  // This grabs the "id" right out of the URL (e.g., "p1")
   const { id } = useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="w-full max-w-2xl flex flex-col">
@@ -20,11 +22,21 @@ export function ProjectTimeline() {
         ← Back to Projects
       </Link>
 
-      <div className="mb-12">
-        <h1 className="text-3xl font-bold mb-2 tracking-tight">Project {id} Changelog</h1>
-        <p className="text-gray-500">A timeline of recent updates.</p>
+      {/* Header */}
+      <div className="mb-12 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">Project {id} Changelog</h1>
+          <p className="text-gray-500">A timeline of recent updates.</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600/10 text-blue-400 border border-blue-600/30 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/20 transition-colors"
+        >
+          + Draft Log
+        </button>
       </div>
 
+      {/* Timeline */}
       <div className="relative border-l border-gray-800 ml-3 md:ml-4 space-y-12 pb-8">
         {mockLogs.map((log) => (
           <div key={log.id} className="relative pl-8 md:pl-10">
@@ -33,6 +45,10 @@ export function ProjectTimeline() {
           </div>
         ))}
       </div>
+
+      {/* Render the Modal */}
+      <CurationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
     </div>
   );
 }
