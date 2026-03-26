@@ -5,7 +5,14 @@ import { CurationModal } from '../components/CurationModal';
 import type { Changelog } from '../types';
 
 const mockLogs: Changelog[] = [
-  { id: '1', tag: '🚀 Feature', date: 'March 26, 2026', commitHash: '#a1b2c3d', title: 'Implemented Dark Mode', description: 'Reframed the color palette to support a native dark mode.' },
+  { 
+    id: '1', 
+    tag: '🚀 Feature', 
+    date: 'March 26, 2026', 
+    commitHash: '#a1b2c3d', 
+    title: 'Implemented Dark Mode', 
+    description: 'Reframed the color palette to support a native dark mode. This required overhauling our entire CSS variable structure.\n\n### What changed:\n* Removed all `bg-white` hardcoded values.\n* Implemented the `@tailwindcss/typography` plugin.\n\n```javascript\n// The new theme config\nexport const theme = "dark";\nconsole.log("Dark mode active!");\n```' 
+  },
   { id: '2', tag: '🐛 Bugfix', date: 'March 24, 2026', commitHash: '#f9e8d7c', title: 'Fixed routing issue', description: 'Resolved a bug where refreshing caused a 404.' }
 ];
 

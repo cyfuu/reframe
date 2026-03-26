@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown';
 import type { Changelog } from '../types';
 
 interface Props {
@@ -25,8 +26,9 @@ export function ChangelogCard({ data }: Props) {
         {data.title}
       </h3>
 
-      <div className="text-gray-400 leading-relaxed text-sm space-y-4">
-        <p>{data.description}</p>
+      {/* The Magic Markdown Wrapper */}
+      <div className="prose prose-invert prose-sm max-w-none text-gray-400 prose-p:leading-relaxed prose-pre:bg-[#050505] prose-pre:border prose-pre:border-gray-800 prose-code:text-blue-300">
+        <ReactMarkdown>{data.description}</ReactMarkdown>
       </div>
       
     </div>
