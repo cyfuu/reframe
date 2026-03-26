@@ -3,6 +3,16 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
+interface GithubCommit {
+  sha: string;
+  commit: {
+    message: string;
+    author: {
+      date: string;
+    };
+  };
+}
+
 export function WriteLog() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -14,35 +24,77 @@ export function WriteLog() {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const [commits, setCommits] = useState<GithubCommit[]>([]);
+  const [isLoadingCommits, setIsLoadingCommits] = useState(false);
+  const [selectedCommits, setSelectedCommits] = useState<Set<string>>(new Set());
+  const [attachedShas, setAttachedShas] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (!user) {
       navigate('/');
       return;
     }
 
-    async function fetchProject() {
-      const { data } = await supabase
+    async function fetchProjectAndCommits() {
+      const { data: projectData } = await supabase
         .from('projects')
         .select('*')
         .eq('id', id)
         .single();
         
-      if (data) setProject(data);
+      if (projectData) {
+        setProject(projectData);
+        setIsLoadingCommits(true);
+        
+        try {
+          const { data: existingLogs } = await supabase
+            .from('logs')
+            .select('commit_hash')
+            .eq('project_id', id);
+
+          const usedShas = new Set<string>();
+          if (existingLogs) {
+            existingLogs.forEach(log => {
+              if (log.commit_hash && log.commit_hash !== 'N/A') {
+                log.commit_hash.split(',').forEach((sha: string) => usedShas.add(sha));
+              }
+            });
+          }
+
+          const res = await fetch(`https://api.github.com/repos/${projectData.repo_url}/commits`);
+          if (res.ok) {
+            const commitData: GithubCommit[] = await res.json();
+            
+            const freshCommits = commitData.filter(c => !usedShas.has(c.sha));
+            setCommits(freshCommits);
+          }
+        } catch (error) {
+          console.error("Failed to fetch commits:", error);
+        } finally {
+          setIsLoadingCommits(false);
+        }
+      }
     }
     
-    fetchProject();
+    fetchProjectAndCommits();
   }, [id, user, navigate]);
 
   async function handlePublish(e: React.FormEvent) {
     e.preventDefault();
     setIsSaving(true);
 
+    const finalShas = new Set([...attachedShas, ...selectedCommits]);
+    
+    const hashedString = finalShas.size > 0 
+      ? Array.from(finalShas).join(',') 
+      : 'N/A';
+
     const { error } = await supabase.from('logs').insert([{
       project_id: id,
-      title,
-      version,
-      content,
-      date: new Date().toISOString(),
+      title: title,
+      tag: version,
+      description: content,
+      commit_hash: hashedString,
     }]);
 
     if (!error) {
@@ -51,6 +103,31 @@ export function WriteLog() {
       console.error(error);
       setIsSaving(false);
     }
+  }
+
+  function toggleCommit(sha: string) {
+    const newSelection = new Set(selectedCommits);
+    if (newSelection.has(sha)) newSelection.delete(sha);
+    else newSelection.add(sha);
+    setSelectedCommits(newSelection);
+  }
+
+  function handleAppendToDraft() {
+    const bulletPoints = Array.from(selectedCommits)
+      .map(sha => {
+        const found = commits.find(c => c.sha === sha);
+        return found ? `- ${found.commit.message.split('\n')[0]}` : '';
+      })
+      .filter(msg => msg !== '')
+      .join('\n');
+
+    setContent(prev => prev + (prev ? '\n\n' : '') + bulletPoints);
+    
+    const newAttached = new Set(attachedShas);
+    selectedCommits.forEach(sha => newAttached.add(sha));
+    setAttachedShas(newAttached);
+
+    setSelectedCommits(new Set());
   }
 
   if (!project) {
@@ -95,7 +172,7 @@ export function WriteLog() {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col relative">
             <label className="block text-sm font-medium text-gray-400 mb-1">Changelog Notes</label>
             <textarea
               required
@@ -123,8 +200,48 @@ export function WriteLog() {
           <p className="text-xs text-gray-500 truncate">{project.repo_url}</p>
         </div>
         
-        <div className="flex-1 p-6 flex flex-col items-center justify-center text-center text-gray-500 border-2 border-dashed border-gray-800/50 m-4 rounded-xl">
-          <p className="text-sm">We will wire up the GitHub API here next!</p>
+        <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+          {isLoadingCommits ? (
+            <div className="text-center text-gray-500 py-8 animate-pulse text-sm">Loading commits...</div>
+          ) : commits.length === 0 ? (
+            <div className="text-center text-gray-500 py-8 text-sm border border-dashed border-gray-800 m-2 rounded-xl">
+              All recent commits have been documented!
+            </div>
+          ) : (
+            commits.map((c) => {
+              const isSelected = selectedCommits.has(c.sha);
+              return (
+                <div 
+                  key={c.sha}
+                  onClick={() => toggleCommit(c.sha)}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    isSelected 
+                      ? 'bg-blue-500/10 border-blue-500/50' 
+                      : 'bg-[#050505] border-gray-800 hover:border-gray-600'
+                  }`}
+                >
+                  <p className={`text-sm mb-1 line-clamp-2 ${isSelected ? 'text-blue-100' : 'text-gray-300'}`}>
+                    {c.commit.message}
+                  </p>
+                  <p className="text-xs text-gray-600 font-mono">
+                    {new Date(c.commit.author.date).toLocaleDateString()} • {c.sha.substring(0, 7)}
+                  </p>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div className="p-4 border-t border-gray-800 bg-[#050505]">
+          <button
+            onClick={handleAppendToDraft}
+            disabled={selectedCommits.size === 0}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {selectedCommits.size === 0 
+              ? 'Select commits to append' 
+              : `Append ${selectedCommits.size} to Draft`}
+          </button>
         </div>
       </div>
 

@@ -38,7 +38,7 @@ export function ProjectTimeline() {
       .from('logs')
       .select('*')
       .eq('project_id', id)
-      .order('date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (!logsError && logsData) {
       setLogs(logsData);
@@ -105,15 +105,15 @@ export function ProjectTimeline() {
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
               <span className="text-sm text-gray-400 font-mono block mb-2">
-                {new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 <span className="mx-2">•</span>
-                {log.version}
+                {log.tag}
               </span>
               
               <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2">
                 <h2 className="text-xl font-bold text-white mb-3">{log.title}</h2>
                 <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap">
-                  {log.content}
+                  {log.description}
                 </div>
               </div>
             </div>
