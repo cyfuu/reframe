@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
 import { ProjectTimeline } from './pages/ProjectTimeline';
+import { Login } from './pages/Login';
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/project/:id" element={<ProjectTimeline />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </HashRouter>
