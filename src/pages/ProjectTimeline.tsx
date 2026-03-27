@@ -116,7 +116,7 @@ export function ProjectTimeline() {
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
               <span className="text-sm text-gray-400 font-mono block mb-2">
-                {new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {log.display_date || new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 <span className="mx-2">•</span>
                 {log.tag}
               </span>

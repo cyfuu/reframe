@@ -89,12 +89,36 @@ export function WriteLog() {
     const finalShas = new Set([...attachedShas, ...selectedCommits]);
     const hashedString = finalShas.size > 0 ? Array.from(finalShas).join(',') : 'N/A';
 
+    let generatedDisplayDate = "";
+    
+    const selectedCommitsData = commits.filter(c => finalShas.has(c.sha));
+
+    const formatDate = (dateObj: Date) => 
+      dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    if (selectedCommitsData.length > 0) {
+      const dates = selectedCommitsData.map(c => new Date(c.commit.author.date));
+      dates.sort((a, b) => a.getTime() - b.getTime());
+
+      const oldest = dates[0];
+      const newest = dates[dates.length - 1];
+
+      if (formatDate(oldest) === formatDate(newest)) {
+        generatedDisplayDate = formatDate(oldest);
+      } else {
+        generatedDisplayDate = `${formatDate(oldest)} - ${formatDate(newest)}`;
+      }
+    } else {
+      generatedDisplayDate = formatDate(new Date());
+    }
+
     const logPayload = {
       project_id: id,
       title: title,
       tag: tag,
       description: content,
       commit_hash: hashedString,
+      display_date: generatedDisplayDate, 
     };
 
     let error;
