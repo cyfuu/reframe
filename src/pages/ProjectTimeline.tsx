@@ -12,6 +12,11 @@ export function ProjectTimeline() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState('All');
   
+  const ITEMS_PER_PAGE = 10;
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   useEffect(() => {
     if (id) {
       fetchProjectAndLogs();
@@ -45,20 +50,42 @@ export function ProjectTimeline() {
       setIsLoading(false);
       return;
     }
-
     setProject(projectData);
 
     const { data: logsData, error: logsError } = await supabase
       .from('logs')
       .select('*')
       .eq('project_id', id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(0, ITEMS_PER_PAGE - 1);
 
     if (!logsError && logsData) {
       setLogs(logsData);
+      setHasMore(logsData.length === ITEMS_PER_PAGE); 
     }
-
     setIsLoading(false);
+  }
+
+  async function loadMoreLogs() {
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    
+    const from = nextPage * ITEMS_PER_PAGE;
+    const to = from + ITEMS_PER_PAGE - 1;
+
+    const { data, error } = await supabase
+      .from('logs')
+      .select('*')
+      .eq('project_id', id)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (!error && data) {
+      setLogs(prevLogs => [...prevLogs, ...data]);
+      setHasMore(data.length === ITEMS_PER_PAGE);
+      setPage(nextPage);
+    }
+    setIsLoadingMore(false);
   }
 
   if (isLoading) {
@@ -174,6 +201,19 @@ export function ProjectTimeline() {
           ))
         )}
       </div>
+      
+      {/* Load More Button */}
+      {hasMore && logs.length > 0 && (
+        <div className="mt-12 flex justify-center">
+          <button
+            onClick={loadMoreLogs}
+            disabled={isLoadingMore}
+            className="px-6 py-2 bg-[#0a0a0a] border border-gray-800 text-white rounded-full text-sm font-medium hover:bg-gray-800 hover:border-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoadingMore ? 'Loading...' : 'Load More Updates'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
