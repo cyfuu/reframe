@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 interface GithubCommit {
   sha: string;
@@ -137,7 +138,7 @@ export function WriteLog() {
       navigate(`/project/${id}`);
     } else {
       console.error("Full Error:", error);
-      alert(`Database Error: ${error.message}`);
+      toast.error(`Database Error: ${error.message}`);
       setIsSaving(false);
     }
   }

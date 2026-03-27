@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 export function ProjectTimeline() {
   const { id } = useParams<{ id: string }>(); 
@@ -46,7 +47,7 @@ export function ProjectTimeline() {
     const { error } = await supabase.from('logs').delete().eq('id', logId);
 
     if (error) {
-      alert("Error deleting log: " + error.message);
+      toast.error("Error deleting log: " + error.message);
     } else {
       setLogs(prevLogs => prevLogs.filter(log => log.id !== logId));
     }

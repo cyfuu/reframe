@@ -1,4 +1,5 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
 import { ProjectTimeline } from './pages/ProjectTimeline';
@@ -10,6 +11,24 @@ function App() {
   return (
     <AuthProvider>
       <HashRouter>
+        
+        <Toaster 
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: '#0a0a0a',
+              color: '#fff',
+              border: '1px solid #1f2937',
+            },
+            success: {
+              iconTheme: {
+                primary: '#3b82f6',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
+
         <div className="min-h-screen bg-black text-white p-8 md:p-16 flex flex-col items-center">
           <Routes>
             <Route path="/" element={<Landing />} />
