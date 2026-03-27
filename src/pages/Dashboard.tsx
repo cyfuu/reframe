@@ -19,16 +19,14 @@ export function Dashboard() {
   async function fetchProjects() {
     setIsLoading(true);
     
-    // Grab all projects, newest first
     const { data, error } = await supabase
       .from('projects')
-      .select('*')
+      .select('*, logs(id)') 
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching projects:', error.message);
     } else if (data) {
-      // Map the database snake_case to our frontend camelCase types
       const formattedProjects: Project[] = data.map((row) => ({
         id: row.id,
         name: row.name,
@@ -36,13 +34,28 @@ export function Dashboard() {
         lastUpdated: new Date(row.created_at).toLocaleDateString('en-US', {
           month: 'long', day: 'numeric', year: 'numeric'
         }),
-        logCount: 0 // We will dynamically count the logs later!
+        logCount: row.logs ? row.logs.length : 0 
       }));
       
       setProjects(formattedProjects);
     }
     
     setIsLoading(false);
+  }
+
+  async function handleDeleteProject(e: React.MouseEvent, projectId: string) {
+    e.preventDefault();
+    
+    const isConfirmed = window.confirm("Are you absolutely sure? This will delete the project and ALL its changelogs!");
+    if (!isConfirmed) return;
+
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    
+    if (error) {
+      alert("Error deleting project: " + error.message);
+    } else {
+      setProjects(projects.filter(p => p.id !== projectId));
+    }
   }
 
   return (
@@ -76,9 +89,21 @@ export function Dashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map(project => (
-            <Link to={`/project/${project.id}`} key={project.id} className="block group">
-               <ProjectCard project={project} onClick={() => {}} />
-            </Link>
+            <div key={project.id} className="relative group">
+              <Link to={`/project/${project.id}`} className="block">
+                 <ProjectCard project={project} onClick={() => {}} />
+              </Link>
+
+              {user && (
+                <button 
+                  onClick={(e) => handleDeleteProject(e, project.id)}
+                  className="absolute bottom-4 right-4 bg-[#0a0a0a] border border-gray-800 p-2 rounded-lg text-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 z-10"
+                  title="Delete Project"
+                >
+                  🗑️
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
