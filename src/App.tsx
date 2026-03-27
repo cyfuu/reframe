@@ -1,4 +1,5 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
 import { ProjectTimeline } from './pages/ProjectTimeline';
 import { Login } from './pages/Login';
@@ -11,7 +12,8 @@ function App() {
       <HashRouter>
         <div className="min-h-screen bg-black text-white p-8 md:p-16 flex flex-col items-center">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/projects" element={<Dashboard />} />
             <Route path="/project/:id" element={<ProjectTimeline />} />
             <Route path="/project/:id/write" element={<WriteLog />} />
             <Route path="/project/:id/edit/:logId" element={<WriteLog />} />
