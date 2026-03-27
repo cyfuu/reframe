@@ -184,7 +184,7 @@ export function WriteLog() {
         <form onSubmit={handlePublish} className="flex-1 flex flex-col gap-5">
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Update Title</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Title</label>
               <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 transition-all" />
             </div>
             
