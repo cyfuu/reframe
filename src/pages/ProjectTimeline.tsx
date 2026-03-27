@@ -10,6 +10,7 @@ export function ProjectTimeline() {
   const [project, setProject] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState('All');
   
   useEffect(() => {
     if (id) {
@@ -68,6 +69,9 @@ export function ProjectTimeline() {
     return <div className="text-center text-red-400 py-12">Project not found.</div>;
   }
 
+  const uniqueTags = ['All', ...Array.from(new Set(logs.map(log => log.tag)))];
+
+  const filteredLogs = selectedTag === 'All' ? logs : logs.filter(log => log.tag === selectedTag);
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Header Section */}
@@ -99,6 +103,24 @@ export function ProjectTimeline() {
         </div>
       </div>
 
+      {logs.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8">
+          {uniqueTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setSelectedTag(tag)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                selectedTag === tag 
+                  ? 'bg-white text-black shadow-[0_0_10px_rgba(255,255,255,0.2)]' 
+                  : 'bg-[#0a0a0a] border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Timeline Section */}
       <div className="space-y-8">
         {logs.length === 0 ? (
@@ -110,8 +132,12 @@ export function ProjectTimeline() {
               <p className="text-gray-500 text-sm">The developer hasn't published any updates for this project yet. Check back soon!</p>
             )}
           </div>
+        ) : filteredLogs.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            No changelogs found for "{selectedTag}".
+          </div>
         ) : (
-          logs.map((log) => (
+          filteredLogs.map((log) => (
             <div key={log.id} className="border-l-2 border-gray-800 pl-6 relative ml-3">
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
