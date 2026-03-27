@@ -7,14 +7,12 @@ interface GithubCommit {
   sha: string;
   commit: {
     message: string;
-    author: {
-      date: string;
-    };
+    author: { date: string; };
   };
 }
 
 export function WriteLog() {
-  const { id } = useParams<{ id: string }>();
+  const { id, logId } = useParams<{ id: string; logId?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -29,29 +27,35 @@ export function WriteLog() {
   const [selectedCommits, setSelectedCommits] = useState<Set<string>>(new Set());
   const [attachedShas, setAttachedShas] = useState<Set<string>>(new Set());
 
+  const isEditing = !!logId;
+
   useEffect(() => {
     if (!user) {
       navigate('/');
       return;
     }
 
-    async function fetchProjectAndCommits() {
-      const { data: projectData } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', id)
-        .single();
+    async function fetchData() {
+      const { data: projectData } = await supabase.from('projects').select('*').eq('id', id).single();
         
       if (projectData) {
         setProject(projectData);
         setIsLoadingCommits(true);
         
+        if (isEditing) {
+          const { data: logData } = await supabase.from('logs').select('*').eq('id', logId).single();
+          if (logData) {
+            setTitle(logData.title);
+            setTag(logData.tag);
+            setContent(logData.description);
+            if (logData.commit_hash && logData.commit_hash !== 'N/A') {
+              setAttachedShas(new Set(logData.commit_hash.split(',')));
+            }
+          }
+        }
+        
         try {
-          const { data: existingLogs } = await supabase
-            .from('logs')
-            .select('commit_hash')
-            .eq('project_id', id);
-
+          const { data: existingLogs } = await supabase.from('logs').select('commit_hash').eq('project_id', id);
           const usedShas = new Set<string>();
           if (existingLogs) {
             existingLogs.forEach(log => {
@@ -64,8 +68,7 @@ export function WriteLog() {
           const res = await fetch(`https://api.github.com/repos/${projectData.repo_url}/commits`);
           if (res.ok) {
             const commitData: GithubCommit[] = await res.json();
-            
-            const freshCommits = commitData.filter(c => !usedShas.has(c.sha));
+            const freshCommits = commitData.filter(c => !usedShas.has(c.sha) || attachedShas.has(c.sha));
             setCommits(freshCommits);
           }
         } catch (error) {
@@ -76,31 +79,39 @@ export function WriteLog() {
       }
     }
     
-    fetchProjectAndCommits();
-  }, [id, user, navigate]);
+    fetchData();
+  }, [id, logId, user, navigate, isEditing]);
 
   async function handlePublish(e: React.FormEvent) {
     e.preventDefault();
     setIsSaving(true);
 
     const finalShas = new Set([...attachedShas, ...selectedCommits]);
-    
-    const hashedString = finalShas.size > 0 
-      ? Array.from(finalShas).join(',') 
-      : 'N/A';
+    const hashedString = finalShas.size > 0 ? Array.from(finalShas).join(',') : 'N/A';
 
-    const { error } = await supabase.from('logs').insert([{
+    const logPayload = {
       project_id: id,
       title: title,
       tag: tag,
       description: content,
       commit_hash: hashedString,
-    }]);
+    };
+
+    let error;
+
+    if (isEditing) {
+      const { error: updateError } = await supabase.from('logs').update(logPayload).eq('id', logId);
+      error = updateError;
+    } else {
+      const { error: insertError } = await supabase.from('logs').insert([logPayload]);
+      error = insertError;
+    }
 
     if (!error) {
       navigate(`/project/${id}`);
     } else {
-      console.error(error);
+      console.error("Full Error:", error);
+      alert(`Database Error: ${error.message}`);
       setIsSaving(false);
     }
   }
@@ -126,60 +137,43 @@ export function WriteLog() {
     const newAttached = new Set(attachedShas);
     selectedCommits.forEach(sha => newAttached.add(sha));
     setAttachedShas(newAttached);
-
     setSelectedCommits(new Set());
   }
 
-  if (!project) {
-    return <div className="text-center text-gray-500 py-12 animate-pulse">Loading workspace...</div>;
-  }
+  if (!project) return <div className="text-center text-gray-500 py-12 animate-pulse">Loading workspace...</div>;
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 h-[75vh]">
-      
-      {/* LEFT SIDE: The Text Editor */}
       <div className="flex-1 flex flex-col h-full">
         <div className="mb-6">
           <Link to={`/project/${id}`} className="text-gray-500 hover:text-white transition-colors text-sm mb-2 inline-block">
             ← Back to Timeline
           </Link>
-          <h1 className="text-2xl font-bold text-white">Drafting release for {project.name}</h1>
+          {/* Dynamic Header! */}
+          <h1 className="text-2xl font-bold text-white">
+            {isEditing ? 'Editing release for' : 'Drafting release for'} {project.name}
+          </h1>
         </div>
 
         <form onSubmit={handlePublish} className="flex-1 flex flex-col gap-5">
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-400 mb-1">Update Title</label>
-              <input
-                required
-                type="text"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all"
-                placeholder="e.g. Added secure authentication"
-              />
+              <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 transition-all" />
             </div>
+            
             <div className="w-40">
               <label className="block text-sm font-medium text-gray-400 mb-1">Tag</label>
               <div className="relative">
-                <select
-                  value={tag}
-                  onChange={e => setTag(e.target.value)}
-                  // Note: Added pr-10 to give the text room so it doesn't overlap the arrow
-                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
-                >
+                <select value={tag} onChange={e => setTag(e.target.value)} className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
                   <option value="🚀 Feature">🚀 Feature</option>
                   <option value="🐛 Bugfix">🐛 Bugfix</option>
                   <option value="✨ Polish">✨ Polish</option>
                   <option value="🔒 Security">🔒 Security</option>
                   <option value="📦 Release">📦 Release</option>
                 </select>
-                
-                {/* Custom minimalist arrow indicator */}
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
               </div>
             </div>
@@ -187,26 +181,17 @@ export function WriteLog() {
 
           <div className="flex-1 flex flex-col relative">
             <label className="block text-sm font-medium text-gray-400 mb-1">Changelog Notes</label>
-            <textarea
-              required
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              className="w-full flex-1 bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all resize-none font-mono text-sm leading-relaxed custom-scrollbar"
-              placeholder="Summarize your updates here..."
-            />
+            <textarea required value={content} onChange={e => setContent(e.target.value)} className="w-full flex-1 bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-blue-500 transition-all resize-none font-mono text-sm leading-relaxed custom-scrollbar" />
           </div>
 
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="w-full bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50 mt-2"
-          >
-            {isSaving ? 'Publishing...' : 'Publish Changelog'}
+          <button type="submit" disabled={isSaving} className="w-full bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50 mt-2">
+            {/* Dynamic Button Text! */}
+            {isSaving ? 'Saving...' : isEditing ? 'Update Changelog' : 'Publish Changelog'}
           </button>
         </form>
       </div>
 
-      {/* RIGHT SIDE: GitHub Assistant Shell */}
+      {/* GitHub Assistant Sidebar */}
       <div className="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col overflow-hidden h-full shrink-0">
         <div className="p-4 border-b border-gray-800 bg-[#050505]">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">GitHub Commits</h2>
@@ -217,28 +202,14 @@ export function WriteLog() {
           {isLoadingCommits ? (
             <div className="text-center text-gray-500 py-8 animate-pulse text-sm">Loading commits...</div>
           ) : commits.length === 0 ? (
-            <div className="text-center text-gray-500 py-8 text-sm border border-dashed border-gray-800 m-2 rounded-xl">
-              All recent commits have been documented!
-            </div>
+            <div className="text-center text-gray-500 py-8 text-sm border border-dashed border-gray-800 m-2 rounded-xl">All recent commits have been documented!</div>
           ) : (
             commits.map((c) => {
               const isSelected = selectedCommits.has(c.sha);
               return (
-                <div 
-                  key={c.sha}
-                  onClick={() => toggleCommit(c.sha)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'bg-blue-500/10 border-blue-500/50' 
-                      : 'bg-[#050505] border-gray-800 hover:border-gray-600'
-                  }`}
-                >
-                  <p className={`text-sm mb-1 line-clamp-2 ${isSelected ? 'text-blue-100' : 'text-gray-300'}`}>
-                    {c.commit.message}
-                  </p>
-                  <p className="text-xs text-gray-600 font-mono">
-                    {new Date(c.commit.author.date).toLocaleDateString()} • {c.sha.substring(0, 7)}
-                  </p>
+                <div key={c.sha} onClick={() => toggleCommit(c.sha)} className={`p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'bg-blue-500/10 border-blue-500/50' : 'bg-[#050505] border-gray-800 hover:border-gray-600'}`}>
+                  <p className={`text-sm mb-1 line-clamp-2 ${isSelected ? 'text-blue-100' : 'text-gray-300'}`}>{c.commit.message}</p>
+                  <p className="text-xs text-gray-600 font-mono">{new Date(c.commit.author.date).toLocaleDateString()} • {c.sha.substring(0, 7)}</p>
                 </div>
               );
             })
@@ -246,18 +217,11 @@ export function WriteLog() {
         </div>
 
         <div className="p-4 border-t border-gray-800 bg-[#050505]">
-          <button
-            onClick={handleAppendToDraft}
-            disabled={selectedCommits.size === 0}
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {selectedCommits.size === 0 
-              ? 'Select commits to append' 
-              : `Append ${selectedCommits.size} to Draft`}
+          <button onClick={handleAppendToDraft} disabled={selectedCommits.size === 0} className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            {selectedCommits.size === 0 ? 'Select commits to append' : `Append ${selectedCommits.size} to Draft`}
           </button>
         </div>
       </div>
-
     </div>
   );
 }

@@ -14,6 +14,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/project/:id" element={<ProjectTimeline />} />
             <Route path="/project/:id/write" element={<WriteLog />} />
+            <Route path="/project/:id/edit/:logId" element={<WriteLog />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </div>

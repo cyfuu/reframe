@@ -26,7 +26,6 @@ export function ProjectTimeline() {
     if (error) {
       alert("Error deleting log: " + error.message);
     } else {
-      // Instantly remove it from the screen without refreshing the page!
       setLogs(prevLogs => prevLogs.filter(log => log.id !== logId));
     }
   }
@@ -89,7 +88,6 @@ export function ProjectTimeline() {
             </a>
           </div>
           
-          {/* Admin Magic: The button to write a new log */}
           {user && (
             <Link 
               to={`/project/${project.id}/write`}
@@ -106,7 +104,6 @@ export function ProjectTimeline() {
         {logs.length === 0 ? (
           <div className="text-center border border-dashed border-gray-800 rounded-xl py-12 px-4">
             <h3 className="text-lg font-medium text-white mb-2">No changelogs yet</h3>
-            {/* Dynamic Empty State based on who is viewing */}
             {user ? (
               <p className="text-gray-500 text-sm">Click "+ Add Changelog" above to draft your first release note.</p>
             ) : (
@@ -130,10 +127,8 @@ export function ProjectTimeline() {
                   {log.description}
                 </div>
 
-                {/* ONLY SHOW THESE BUTTONS IF LOGGED IN */}
                 {user && (
                   <div className="mt-6 pt-4 border-t border-gray-800/50 flex gap-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* We'll build the Edit page next! */}
                     <Link 
                       to={`/project/${id}/edit/${log.id}`} 
                       className="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-1"
