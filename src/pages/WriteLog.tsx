@@ -20,6 +20,7 @@ export function WriteLog() {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('🚀 Feature');
   const [content, setContent] = useState('');
+  const [displayDate, setDisplayDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const [commits, setCommits] = useState<GithubCommit[]>([]);
@@ -48,6 +49,7 @@ export function WriteLog() {
             setTitle(logData.title);
             setTag(logData.tag);
             setContent(logData.description);
+            setDisplayDate(logData.display_date || '');
             if (logData.commit_hash && logData.commit_hash !== 'N/A') {
               setAttachedShas(new Set(logData.commit_hash.split(',')));
             }
@@ -85,31 +87,31 @@ export function WriteLog() {
   async function handlePublish(e: React.FormEvent) {
     e.preventDefault();
     setIsSaving(true);
-
+    
     const finalShas = new Set([...attachedShas, ...selectedCommits]);
     const hashedString = finalShas.size > 0 ? Array.from(finalShas).join(',') : 'N/A';
-
-    let generatedDisplayDate = "";
-    
-    const selectedCommitsData = commits.filter(c => finalShas.has(c.sha));
 
     const formatDate = (dateObj: Date) => 
       dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    if (selectedCommitsData.length > 0) {
-      const dates = selectedCommitsData.map(c => new Date(c.commit.author.date));
-      dates.sort((a, b) => a.getTime() - b.getTime());
+    let generatedDisplayDate = displayDate;
+    
+    if (!isEditing || selectedCommits.size > 0) {
+      const selectedCommitsData = commits.filter(c => finalShas.has(c.sha));
 
-      const oldest = dates[0];
-      const newest = dates[dates.length - 1];
+      if (selectedCommitsData.length > 0) {
+        const dates = selectedCommitsData.map(c => new Date(c.commit.author.date));
+        dates.sort((a, b) => a.getTime() - b.getTime());
 
-      if (formatDate(oldest) === formatDate(newest)) {
-        generatedDisplayDate = formatDate(oldest);
+        const oldest = dates[0];
+        const newest = dates[dates.length - 1];
+
+        generatedDisplayDate = formatDate(oldest) === formatDate(newest)
+          ? formatDate(oldest)
+          : `${formatDate(oldest)} - ${formatDate(newest)}`;
       } else {
-        generatedDisplayDate = `${formatDate(oldest)} - ${formatDate(newest)}`;
+        generatedDisplayDate = formatDate(new Date());
       }
-    } else {
-      generatedDisplayDate = formatDate(new Date());
     }
 
     const logPayload = {
