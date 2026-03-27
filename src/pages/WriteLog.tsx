@@ -20,7 +20,7 @@ export function WriteLog() {
 
   const [project, setProject] = useState<any>(null);
   const [title, setTitle] = useState('');
-  const [version, setVersion] = useState('');
+  const [tag, setTag] = useState('🚀 Feature');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -92,7 +92,7 @@ export function WriteLog() {
     const { error } = await supabase.from('logs').insert([{
       project_id: id,
       title: title,
-      tag: version,
+      tag: tag,
       description: content,
       commit_hash: hashedString,
     }]);
@@ -159,16 +159,29 @@ export function WriteLog() {
                 placeholder="e.g. Added secure authentication"
               />
             </div>
-            <div className="w-32">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Version</label>
-              <input
-                required
-                type="text"
-                value={version}
-                onChange={e => setVersion(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all"
-                placeholder="v1.0.0"
-              />
+            <div className="w-40">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Tag</label>
+              <div className="relative">
+                <select
+                  value={tag}
+                  onChange={e => setTag(e.target.value)}
+                  // Note: Added pr-10 to give the text room so it doesn't overlap the arrow
+                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="🚀 Feature">🚀 Feature</option>
+                  <option value="🐛 Bugfix">🐛 Bugfix</option>
+                  <option value="✨ Polish">✨ Polish</option>
+                  <option value="🔒 Security">🔒 Security</option>
+                  <option value="📦 Release">📦 Release</option>
+                </select>
+                
+                {/* Custom minimalist arrow indicator */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
 

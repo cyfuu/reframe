@@ -10,12 +10,26 @@ export function ProjectTimeline() {
   const [project, setProject] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
     if (id) {
       fetchProjectAndLogs();
     }
   }, [id]);
+
+  async function handleDelete(logId: string) {
+    const isConfirmed = window.confirm("Are you sure you want to delete this changelog?");
+    if (!isConfirmed) return;
+
+    const { error } = await supabase.from('logs').delete().eq('id', logId);
+
+    if (error) {
+      alert("Error deleting log: " + error.message);
+    } else {
+      // Instantly remove it from the screen without refreshing the page!
+      setLogs(prevLogs => prevLogs.filter(log => log.id !== logId));
+    }
+  }
 
   async function fetchProjectAndLogs() {
     setIsLoading(true);
@@ -110,11 +124,30 @@ export function ProjectTimeline() {
                 {log.tag}
               </span>
               
-              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2">
+              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group">
                 <h2 className="text-xl font-bold text-white mb-3">{log.title}</h2>
                 <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap">
                   {log.description}
                 </div>
+
+                {/* ONLY SHOW THESE BUTTONS IF LOGGED IN */}
+                {user && (
+                  <div className="mt-6 pt-4 border-t border-gray-800/50 flex gap-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* We'll build the Edit page next! */}
+                    <Link 
+                      to={`/project/${id}/edit/${log.id}`} 
+                      className="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-1"
+                    >
+                      ✏️ Edit
+                    </Link>
+                    <button 
+                      onClick={() => handleDelete(log.id)}
+                      className="text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))
