@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 export function ProjectTimeline() {
   const { id } = useParams<{ id: string }>(); 
   const { user } = useAuth(); 
+  const location = useLocation();
   
   const [project, setProject] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState('All');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const ITEMS_PER_PAGE = 10;
   const [page, setPage] = useState(0);
@@ -22,6 +24,20 @@ export function ProjectTimeline() {
       fetchProjectAndLogs();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const params = new URLSearchParams(location.search);
+      const targetLog = params.get('log');
+      
+      if (targetLog) {
+        const element = document.getElementById(`log-${targetLog}`);
+        if (element) {
+          setTimeout(() => element.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+      }
+    }
+  }, [isLoading, location.search]);
 
   async function handleDelete(logId: string) {
     const isConfirmed = window.confirm("Are you sure you want to delete this changelog?");
@@ -99,6 +115,16 @@ export function ProjectTimeline() {
   const uniqueTags = ['All', ...Array.from(new Set(logs.map(log => log.tag)))];
 
   const filteredLogs = selectedTag === 'All' ? logs : logs.filter(log => log.tag === selectedTag);
+
+  function handleCopyLink(logId: string) {
+    const baseUrl = window.location.href.split('?')[0]; 
+    const url = `${baseUrl}?log=${logId}`;
+    
+    navigator.clipboard.writeText(url);
+    setCopiedId(logId);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Header Section */}
@@ -165,7 +191,7 @@ export function ProjectTimeline() {
           </div>
         ) : (
           filteredLogs.map((log) => (
-            <div key={log.id} className="border-l-2 border-gray-800 pl-6 relative ml-3">
+            <div key={log.id} id={`log-${log.id}`} className="border-l-2 border-gray-800 pl-6 relative ml-3">
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
               <span className="text-sm text-gray-400 font-mono block mb-2 flex items-center">
@@ -190,7 +216,16 @@ export function ProjectTimeline() {
               </span>
               
               <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group">
-                <h2 className="text-xl font-bold text-white mb-3">{log.title}</h2>
+                <div className="flex items-center gap-3 mb-3">
+                  <h2 className="text-xl font-bold text-white">{log.title}</h2>
+                  <button 
+                    onClick={() => handleCopyLink(log.id)}
+                    className="text-gray-600 hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Copy direct link to this update"
+                  >
+                    {copiedId === log.id ? '✅' : '🔗'}
+                  </button>
+                </div>
                 <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap">
                   {log.description}
                 </div>
