@@ -168,10 +168,25 @@ export function ProjectTimeline() {
             <div key={log.id} className="border-l-2 border-gray-800 pl-6 relative ml-3">
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
-              <span className="text-sm text-gray-400 font-mono block mb-2">
+              <span className="text-sm text-gray-400 font-mono block mb-2 flex items-center">
                 {log.display_date || new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 <span className="mx-2">•</span>
                 {log.tag}
+                
+                {log.commit_hash && log.commit_hash !== 'N/A' && log.commit_hash.split(',').map((hash: string) => (
+                  <span key={hash} className="flex items-center">
+                    <span className="mx-2">•</span>
+                    <a 
+                      href={`https://github.com/${project.repo_url}/commit/${hash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-gray-800/50 hover:bg-gray-700 text-gray-300 px-2 py-0.5 rounded text-xs transition-colors"
+                      title="View commit on GitHub"
+                    >
+                      {hash.substring(0, 7)}
+                    </a>
+                  </span>
+                ))}
               </span>
               
               <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group">
