@@ -76,6 +76,7 @@ export function WriteLog() {
           }
         } catch (error) {
           console.error("Failed to fetch commits:", error);
+          toast.error("Failed to fetch GitHub commits");
         } finally {
           setIsLoadingCommits(false);
         }
@@ -135,6 +136,7 @@ export function WriteLog() {
     }
 
     if (!error) {
+      toast.success(isEditing ? 'Changelog updated successfully!' : 'Changelog published!');
       navigate(`/project/${id}`);
     } else {
       console.error("Full Error:", error);
@@ -164,6 +166,8 @@ export function WriteLog() {
     const newAttached = new Set(attachedShas);
     selectedCommits.forEach(sha => newAttached.add(sha));
     setAttachedShas(newAttached);
+
+    toast.success(`Appended ${selectedCommits.size} commit(s) to draft`);
     setSelectedCommits(new Set());
   }
 

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import type { Project } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { NewProjectModal } from '../components/NewProjectModal';
+import toast from 'react-hot-toast';
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -26,6 +27,7 @@ export function Dashboard() {
 
     if (error) {
       console.error('Error fetching projects:', error.message);
+      toast.error('Failed to load projects'); 
     } else if (data) {
       const formattedProjects: Project[] = data.map((row) => ({
         id: row.id,
@@ -49,12 +51,14 @@ export function Dashboard() {
     const isConfirmed = window.confirm("Are you absolutely sure? This will delete the project and ALL its changelogs!");
     if (!isConfirmed) return;
 
+    const toastId = toast.loading('Deleting project...');
     const { error } = await supabase.from('projects').delete().eq('id', projectId);
     
     if (error) {
-      alert("Error deleting project: " + error.message);
+      toast.error(`Error deleting project: ${error.message}`, { id: toastId });
     } else {
       setProjects(projects.filter(p => p.id !== projectId));
+      toast.success('Project deleted successfully', { id: toastId });
     }
   }
 
@@ -84,7 +88,7 @@ export function Dashboard() {
         </div>
       ) : projects.length === 0 ? (
         <div className="text-center border border-dashed border-gray-800 rounded-xl py-12 text-gray-500">
-          No projects found. Click "Inject Test Project" to add one!
+          No projects found. Click "New Project" to add one!
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,7 +115,10 @@ export function Dashboard() {
       <NewProjectModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchProjects} 
+        onSuccess={() => {
+          fetchProjects();
+          toast.success('Project created!');
+        }} 
         existingProjects={projects}
       />
     </div>

@@ -44,12 +44,14 @@ export function ProjectTimeline() {
     const isConfirmed = window.confirm("Are you sure you want to delete this changelog?");
     if (!isConfirmed) return;
 
+    const toastId = toast.loading('Deleting changelog...');
     const { error } = await supabase.from('logs').delete().eq('id', logId);
 
     if (error) {
-      toast.error("Error deleting log: " + error.message);
+      toast.error("Error deleting log: " + error.message, { id: toastId });
     } else {
       setLogs(prevLogs => prevLogs.filter(log => log.id !== logId));
+      toast.success('Changelog deleted successfully', { id: toastId });
     }
   }
 
@@ -123,6 +125,7 @@ export function ProjectTimeline() {
     
     navigator.clipboard.writeText(url);
     setCopiedId(logId);
+    toast.success('Link copied to clipboard!');
     setTimeout(() => setCopiedId(null), 2000);
   }
 
