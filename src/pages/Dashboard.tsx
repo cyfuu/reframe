@@ -64,17 +64,17 @@ export function Dashboard() {
 
   return (
     <div className="w-full max-w-4xl">
-      <div className="flex justify-between items-end mb-10">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10">
         <div>
           <h1 className="text-3xl font-bold mb-2 tracking-tight">Projects</h1>
           <p className="text-gray-500">Select a repository to view its changelog.</p>
         </div>
         
-        <div className="flex gap-3">
+        <div className="w-full sm:w-auto">
           {user && (
             <button 
               onClick={() => setIsModalOpen(true)} 
-              className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              className="w-full sm:w-auto block text-center bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             >
               + New Project
             </button>

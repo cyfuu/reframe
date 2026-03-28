@@ -132,36 +132,36 @@ export function ProjectTimeline() {
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Header Section */}
-      <div className="mb-10">
-        <Link to="/" className="text-gray-500 hover:text-white transition-colors text-sm mb-4 inline-block">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6">
+        <Link to="/projects" className="text-gray-500 hover:text-white transition-colors text-sm mb-4 inline-block">
           ← Back to Dashboard
         </Link>
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 text-white">{project.name}</h1>
-            <a 
-              href={`https://github.com/${project.repo_url}`} 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-blue-400 hover:underline text-sm"
-            >
-              github.com/{project.repo_url}
-            </a>
-          </div>
-          
-          {user && (
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold mb-2 text-white break-words">{project.name}</h1>
+          <a 
+            href={`https://github.com/${project.repo_url}`} 
+            target="_blank" 
+            rel="noreferrer"
+            className="text-blue-400 hover:underline text-sm break-all"
+          >
+            github.com/{project.repo_url}
+          </a>
+        </div>
+        
+        {user && (
+          <div className="w-full sm:w-auto mt-2 sm:mt-0">
             <Link 
               to={`/project/${project.id}/write`}
-              className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              className="block w-full sm:w-auto text-center bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             >
               + Add Changelog
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {logs.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mt-6 sm:mt-0 mb-8">
           {uniqueTags.map(tag => (
             <button
               key={tag}
@@ -198,14 +198,17 @@ export function ProjectTimeline() {
             <div key={log.id} id={`log-${log.id}`} className="border-l-2 border-gray-800 pl-6 relative ml-3">
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
-              <span className="text-sm text-gray-400 font-mono block mb-2 flex items-center">
-                {log.display_date || new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                <span className="mx-2">•</span>
-                {log.tag}
+              <div className="text-sm text-gray-400 font-mono mb-3 flex flex-wrap items-center gap-y-2">
+                <span className="whitespace-nowrap">
+                  {log.display_date || new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+                
+                <span className="mx-2 text-gray-600">•</span>
+                <span className="whitespace-nowrap">{log.tag}</span>
                 
                 {log.commit_hash && log.commit_hash !== 'N/A' && log.commit_hash.split(',').map((hash: string) => (
-                  <span key={hash} className="flex items-center">
-                    <span className="mx-2">•</span>
+                  <span key={hash} className="flex items-center whitespace-nowrap">
+                    <span className="mx-2 text-gray-600">•</span>
                     <a 
                       href={`https://github.com/${project.repo_url}/commit/${hash}`}
                       target="_blank"
@@ -217,7 +220,7 @@ export function ProjectTimeline() {
                     </a>
                   </span>
                 ))}
-              </span>
+              </div>
               
               <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group">
                 <div className="flex items-center gap-3 mb-3">
@@ -230,7 +233,7 @@ export function ProjectTimeline() {
                     {copiedId === log.id ? '✅' : '🔗'}
                   </button>
                 </div>
-                <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap">
+                <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap break-words">
                   {log.description}
                 </div>
 

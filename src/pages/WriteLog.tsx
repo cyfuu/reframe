@@ -174,7 +174,7 @@ export function WriteLog() {
   if (!project) return <div className="text-center text-gray-500 py-12 animate-pulse">Loading workspace...</div>;
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 h-[75vh]">
+    <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 min-h-[calc(100vh-8rem)] md:min-h-0 md:h-[80vh]">
       <div className="flex-1 flex flex-col h-full">
         <div className="mb-6">
           <Link to={`/project/${id}`} className="text-gray-500 hover:text-white transition-colors text-sm mb-2 inline-block">
@@ -223,7 +223,7 @@ export function WriteLog() {
       </div>
 
       {/* GitHub Assistant Sidebar */}
-      <div className="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col overflow-hidden h-full shrink-0">
+      <div className="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col overflow-hidden shrink-0 min-h-[400px] md:min-h-0 md:h-full">
         <div className="p-4 border-b border-gray-800 bg-[#050505]">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">GitHub Commits</h2>
           <p className="text-xs text-gray-500 truncate">{project.repo_url}</p>
