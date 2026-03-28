@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { motion } from 'framer-motion';
 import type { Project } from '../types';
 
 const MY_GITHUB_USERNAME = 'cyfuu';
@@ -79,7 +80,12 @@ export function NewProjectModal({ isOpen, onClose, onSuccess, existingProjects }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg bg-[#0a0a0a] border border-gray-800 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
+      <motion.div 
+          className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 w-full max-w-md relative"
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
         <div className="flex justify-between items-center mb-6 shrink-0">
           <div>
             <h2 className="text-xl font-bold text-white">Select a Repository</h2>
@@ -119,7 +125,7 @@ export function NewProjectModal({ isOpen, onClose, onSuccess, existingProjects }
             ))
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

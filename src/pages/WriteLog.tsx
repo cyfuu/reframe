@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 interface GithubCommit {
@@ -175,7 +176,12 @@ export function WriteLog() {
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 min-h-[calc(100vh-8rem)] md:min-h-0 md:h-[80vh]">
-      <div className="flex-1 flex flex-col h-full">
+      <motion.div 
+        className="flex-1 flex flex-col h-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="mb-6">
           <Link to={`/project/${id}`} className="text-gray-500 hover:text-white transition-colors text-sm mb-2 inline-block">
             ← Back to Timeline
@@ -220,10 +226,15 @@ export function WriteLog() {
             {isSaving ? 'Saving...' : isEditing ? 'Update Changelog' : 'Publish Changelog'}
           </button>
         </form>
-      </div>
+      </motion.div>
 
       {/* GitHub Assistant Sidebar */}
-      <div className="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col overflow-hidden shrink-0 min-h-[400px] md:min-h-0 md:h-full">
+      <motion.div 
+        className="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col overflow-hidden shrink-0 min-h-[400px] md:min-h-0 md:h-full"
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <div className="p-4 border-b border-gray-800 bg-[#050505]">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">GitHub Commits</h2>
           <p className="text-xs text-gray-500 truncate">{project.repo_url}</p>
@@ -252,7 +263,7 @@ export function WriteLog() {
             {selectedCommits.size === 0 ? 'Select commits to append' : `Append ${selectedCommits.size} to Draft`}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

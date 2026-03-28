@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import type { Project } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { NewProjectModal } from '../components/NewProjectModal';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export function Dashboard() {
@@ -64,7 +65,12 @@ export function Dashboard() {
 
   return (
     <div className="w-full max-w-4xl">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10">
+      <motion.div 
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
         <div>
           <h1 className="text-3xl font-bold mb-2 tracking-tight">Projects</h1>
           <p className="text-gray-500">Select a repository to view its changelog.</p>
@@ -80,7 +86,7 @@ export function Dashboard() {
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {isLoading ? (
         <div className="text-center text-gray-500 py-12 animate-pulse">
@@ -92,8 +98,14 @@ export function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map(project => (
-            <div key={project.id} className="relative group">
+          {projects.map((project, index) => (
+            <motion.div 
+              key={project.id} 
+              className="relative group"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
               <Link to={`/project/${project.id}`} className="block">
                  <ProjectCard project={project} onClick={() => {}} />
               </Link>
@@ -107,7 +119,7 @@ export function Dashboard() {
                   🗑️
                 </button>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

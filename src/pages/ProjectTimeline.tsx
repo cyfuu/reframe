@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export function ProjectTimeline() {
@@ -132,7 +133,12 @@ export function ProjectTimeline() {
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6">
+      <motion.div 
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
         <Link to="/projects" className="text-gray-500 hover:text-white transition-colors text-sm mb-4 inline-block">
           ← Back to Dashboard
         </Link>
@@ -158,13 +164,20 @@ export function ProjectTimeline() {
             </Link>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {logs.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-6 sm:mt-0 mb-8">
-          {uniqueTags.map(tag => (
-            <button
+        <motion.div 
+          className="flex flex-wrap gap-2 mt-6 sm:mt-0 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          {uniqueTags.map((tag, index) => (
+            <motion.button
               key={tag}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               onClick={() => setSelectedTag(tag)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 selectedTag === tag 
@@ -173,9 +186,9 @@ export function ProjectTimeline() {
               }`}
             >
               {tag}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* Timeline Section */}
@@ -194,8 +207,15 @@ export function ProjectTimeline() {
             No changelogs found for "{selectedTag}".
           </div>
         ) : (
-          filteredLogs.map((log) => (
-            <div key={log.id} id={`log-${log.id}`} className="border-l-2 border-gray-800 pl-6 relative ml-3">
+          filteredLogs.map((log, index) => (
+            <motion.div 
+              key={log.id} 
+              id={`log-${log.id}`} 
+              className="border-l-2 border-gray-800 pl-6 relative ml-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
               <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
               
               <div className="text-sm text-gray-400 font-mono mb-3 flex flex-wrap items-center gap-y-2">
@@ -254,7 +274,7 @@ export function ProjectTimeline() {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>
