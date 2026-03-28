@@ -247,7 +247,7 @@ export function ProjectTimeline() {
                   <h2 className="text-xl font-bold text-white">{log.title}</h2>
                   <button 
                     onClick={() => handleCopyLink(log.id)}
-                    className="text-gray-600 hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100"
+                    className="text-gray-600 hover:text-gray-300 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                     title="Copy direct link to this update"
                   >
                     {copiedId === log.id ? '✅' : '🔗'}
@@ -258,8 +258,8 @@ export function ProjectTimeline() {
                 </div>
 
                 {user && (
-                  <div className="mt-6 pt-4 border-t border-gray-800/50 flex gap-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Link 
+                  <div className="mt-6 pt-4 border-t border-gray-800/50 flex gap-4 text-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <Link
                       to={`/project/${id}/edit/${log.id}`} 
                       className="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-1"
                     >

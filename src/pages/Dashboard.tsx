@@ -113,7 +113,7 @@ export function Dashboard() {
               {user && (
                 <button 
                   onClick={(e) => handleDeleteProject(e, project.id)}
-                  className="absolute bottom-4 right-4 bg-[#0a0a0a] border border-gray-800 p-2 rounded-lg text-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 z-10"
+                  className="absolute bottom-4 right-4 bg-[#0a0a0a] border border-gray-800 p-2 rounded-lg text-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-500/10 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 z-10"
                   title="Delete Project"
                 >
                   🗑️
