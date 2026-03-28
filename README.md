@@ -1,73 +1,23 @@
-# React + TypeScript + Vite
+# 🚀 Reframe
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**[View Live Demo](https://cyfuu.github.io/reframe/)**
 
-Currently, two official plugins are available:
+## 📖 What is Reframe?
+Reframe is my personal developer workspace and changelog application. It's built to document my coding journey, ship updates, and share the evolution of my projects in one beautifully animated timeline. 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Instead of keeping release notes scattered across different platforms, Reframe acts as a centralized hub to track milestones, write detailed logs, and pull in recent GitHub activity directly alongside my writing.
 
-## React Compiler
+## ✨ Features
+* **Premium UI/UX:** Buttery-smooth, staggered animations and transitions powered by Framer Motion.
+* **Changelog Timeline:** Beautifully structured project updates, complete with tag filtering and timestamped entries.
+* **GitHub Integration:** A dedicated workspace sidebar to track recent repository commits while writing updates.
+* **Fully Responsive:** Perfectly optimized for both desktop and mobile touchscreens.
+* **Secure Authentication:** Protected routes ensuring only I can create, edit, or delete my projects and logs.
+* **Client-Side Routing:** Lightning-fast navigation using React HashRouter, perfectly configured for static hosting.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Tech Stack
+* **Frontend:** React 18, TypeScript, Vite
+* **Styling:** Tailwind CSS
+* **Animations:** Framer Motion
+* **Routing:** React Router DOM (HashRouter)
+* **Deployment:** GitHub Pages (`gh-pages`)
