@@ -7,8 +7,10 @@
 body, html {
   @apply text-white min-h-[100dvh];
   background-color: #050505;
-  background-image: radial-gradient(at top right, #171e2e 0%, #050505 50%);
-  background-attachment: fixed;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
   margin: 0;
   padding: 0;
 }
