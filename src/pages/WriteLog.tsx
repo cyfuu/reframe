@@ -69,7 +69,7 @@ export function WriteLog() {
             });
           }
 
-          const res = await fetch(`https://api.github.com/repos/${projectData.repo_url}/commits`);
+          const res = await fetch(`https://api.github.com/repos/${projectData.repo_url}/commits?per_page=50`);
           if (res.ok) {
             const commitData: GithubCommit[] = await res.json();
             const freshCommits = commitData.filter(c => !usedShas.has(c.sha) || attachedShas.has(c.sha));
