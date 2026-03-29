@@ -218,7 +218,10 @@ export function WriteLog() {
 
           <div className="flex-1 flex flex-col relative">
             <label className="block text-sm font-medium text-gray-400 mb-1">Changelog Notes</label>
-            <textarea required value={content} onChange={e => setContent(e.target.value)} className="w-full flex-1 bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-blue-500 transition-all resize-none font-mono text-sm leading-relaxed custom-scrollbar" />
+            <textarea
+              className="w-full bg-[#0a0a0a]/50 border border-gray-800 rounded-lg p-4 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none min-h-[300px] md:min-h-[500px] flex-1"
+              placeholder="What did you build today?"
+            />
           </div>
 
           <button type="submit" disabled={isSaving} className="w-full bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50 mt-2">

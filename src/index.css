@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body, html {
+  @apply text-white min-h-[100dvh];
+  background-color: #050505;
+  background-image: radial-gradient(at top right, #171e2e 0%, #050505 50%);
+  background-attachment: fixed;
+  margin: 0;
+  padding: 0;
+}

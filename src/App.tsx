@@ -29,7 +29,7 @@ function App() {
           }}
         />
 
-        <div className="min-h-screen bg-black text-white p-8 md:p-16 flex flex-col items-center">
+        <div className="min-h-screen text-white p-8 md:p-16 flex flex-col items-center">
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/projects" element={<Dashboard />} />
