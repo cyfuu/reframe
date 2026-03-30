@@ -192,7 +192,7 @@ export function ProjectTimeline() {
       )}
 
       {/* Timeline Section */}
-      <div className="space-y-8">
+      <div>
         {logs.length === 0 ? (
           <div className="text-center border border-dashed border-gray-800 rounded-xl py-12 px-4">
             <h3 className="text-lg font-medium text-white mb-2">No changelogs yet</h3>
@@ -211,12 +211,12 @@ export function ProjectTimeline() {
             <motion.div 
               key={log.id} 
               id={`log-${log.id}`} 
-              className="border-l-2 border-gray-800 pl-6 relative ml-3"
+              className="border-l-2 border-gray-800 pl-6 relative ml-3 group pb-8 last:pb-0"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
-              <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+              <div className="absolute w-3 h-3 bg-gray-600 rounded-full -left-[7px] top-1.5 shadow-none transition-all duration-300 ease-out group-hover:scale-150 group-hover:bg-white group-hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]"></div>
               
               <div className="text-sm text-gray-400 font-mono mb-3 flex flex-wrap items-center gap-y-2">
                 <span className="whitespace-nowrap">
@@ -242,7 +242,7 @@ export function ProjectTimeline() {
                 ))}
               </div>
               
-              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group">
+              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group transition-all duration-300 ease-out group-hover:-translate-y-1 group-hover:border-gray-600 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
                 <div className="flex items-center gap-3 mb-3">
                   <h2 className="text-xl font-bold text-white">{log.title}</h2>
                   <button 
