@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
@@ -10,7 +10,7 @@ import { AuthProvider } from './contexts/AuthContext';
 function App() {
   return (
     <AuthProvider>
-      <HashRouter>
+      <BrowserRouter basename="/reframe">
         
         <Toaster 
           position="bottom-right"
@@ -37,9 +37,10 @@ function App() {
             <Route path="/project/:id/write" element={<WriteLog />} />
             <Route path="/project/:id/edit/:logId" element={<WriteLog />} />
             <Route path="/login" element={<Login />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
-      </HashRouter>
+      </BrowserRouter>
     </AuthProvider>
   );
 }

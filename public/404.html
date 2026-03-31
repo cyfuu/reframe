@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 | Reframe</title>
+
+    <script type="text/javascript">
+      var pathSegmentsToKeep = 1; 
+
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname
+            .split("/")
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join("/") +
+          "/?/" +
+          l.pathname.slice(1).replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash,
+      );
+    </script>
+
+    <style>
+      body {
+        background-color: #0a0a0a;
+        color: #fff;
+        font-family: system-ui, -apple-system, sans-serif;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        text-align: center;
+        padding: 2rem;
+      }
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        color: #3b82f6;
+      }
+      p {
+        color: #9ca3af;
+        margin-bottom: 2rem;
+      }
+      .loader {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #1f2937;
+        border-bottom-color: #3b82f6;
+        border-radius: 50%;
+        display: inline-block;
+        animation: rotation 1s linear infinite;
+      }
+      @keyframes rotation {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>404</h1>
+      <p>Redirecting back to Reframe...</p>
+      <span class="loader"></span>
+    </div>
+  </body>
+</html>
