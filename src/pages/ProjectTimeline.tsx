@@ -43,22 +43,36 @@ export function ProjectTimeline() {
   }, [isLoading, location.search]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveMobileNode(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: '-33% 0px -33% 0px' } 
-    );
+    const handleScroll = () => {
+      const viewportCenter = window.innerHeight / 2;
+      
+      const elements = document.querySelectorAll('.mobile-timeline-item');
+      let minDistance = Infinity;
+      let closestId: string | null = null;
 
-    const elements = document.querySelectorAll('.mobile-timeline-item');
-    elements.forEach((el) => observer.observe(el));
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const elCenter = rect.top + (rect.height / 2);
+        
+        const distance = Math.abs(viewportCenter - elCenter);
 
-    return () => observer.disconnect();
-  }, [logs, selectedTag]);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestId = el.id;
+        }
+      });
+
+      if (closestId && closestId !== activeMobileNode) {
+        setActiveMobileNode(closestId);
+      }
+    };
+
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [logs, selectedTag, activeMobileNode]);
 
   async function handleDelete(logId: string) {
     const isConfirmed = window.confirm("Are you sure you want to delete this changelog?");
@@ -267,7 +281,10 @@ export function ProjectTimeline() {
                 ))}
               </div>
               
-              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-2 relative group transition-all duration-300 ease-out group-hover:-translate-y-1 group-hover:border-gray-600 group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
+              <div className={`bg-[#0a0a0a] border rounded-xl p-6 mt-2 relative transition-all duration-300 ease-out border-gray-800
+                md:group-hover:-translate-y-1 md:group-hover:border-gray-600 md:group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)]
+                ${isMobileActive ? 'max-md:-translate-y-1 max-md:border-gray-600 max-md:shadow-[0_8px_30px_rgb(0,0,0,0.5)]' : ''}
+              `}>
                 <div className="flex items-center gap-3 mb-3">
                   <h2 className="text-xl font-bold text-white">{log.title}</h2>
                   <button 
