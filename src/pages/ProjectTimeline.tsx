@@ -15,6 +15,7 @@ export function ProjectTimeline() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState('All');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeMobileNode, setActiveMobileNode] = useState<string | null>(null);
   
   const ITEMS_PER_PAGE = 10;
   const [page, setPage] = useState(0);
@@ -40,6 +41,24 @@ export function ProjectTimeline() {
       }
     }
   }, [isLoading, location.search]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveMobileNode(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-33% 0px -33% 0px' } 
+    );
+
+    const elements = document.querySelectorAll('.mobile-timeline-item');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [logs, selectedTag]);
 
   async function handleDelete(logId: string) {
     const isConfirmed = window.confirm("Are you sure you want to delete this changelog?");
@@ -207,16 +226,22 @@ export function ProjectTimeline() {
             No changelogs found for "{selectedTag}".
           </div>
         ) : (
-          filteredLogs.map((log, index) => (
-            <motion.div 
-              key={log.id} 
-              id={`log-${log.id}`} 
-              className="border-l-2 border-gray-800 pl-6 relative ml-3 group pb-8 last:pb-0"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-            >
-              <div className="absolute w-3 h-3 bg-gray-600 rounded-full -left-[7px] top-1.5 shadow-none transition-all duration-300 ease-out group-hover:scale-150 group-hover:bg-white group-hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]"></div>
+          filteredLogs.map((log, index) => {
+            const isMobileActive = activeMobileNode === `log-${log.id}`;
+
+            return (
+              <motion.div 
+                key={log.id} 
+                id={`log-${log.id}`} 
+                className="mobile-timeline-item border-l-2 border-gray-800 pl-6 relative ml-3 group pb-8 last:pb-0"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <div className={`absolute w-3 h-3 rounded-full -left-[7px] top-1.5 transition-all duration-300 ease-out bg-gray-600 shadow-none
+                  md:group-hover:scale-150 md:group-hover:bg-white md:group-hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]
+                  ${isMobileActive ? 'max-md:scale-150 max-md:bg-white max-md:shadow-[0_0_20px_rgba(255,255,255,0.8)]' : ''}
+                `}></div>
               
               <div className="text-sm text-gray-400 font-mono mb-3 flex flex-wrap items-center gap-y-2">
                 <span className="whitespace-nowrap">
@@ -275,7 +300,7 @@ export function ProjectTimeline() {
                 )}
               </div>
             </motion.div>
-          ))
+          )})
         )}
       </div>
       
