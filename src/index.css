@@ -33,35 +33,16 @@
 }
 
 html, body {
-  background-color: var(--bg-app);
-  transition: background-color 0.3s ease;
-}
-
-html {
-  overflow-y: scroll;
-}
-
-body {
   @apply min-h-[100dvh];
   color: var(--text-main);
   margin: 0;
-  position: relative;
-  
+  padding: 0;
   background-image: 
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
-  background-attachment: fixed;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, var(--bg-app) 90%);
-  pointer-events: none;
-  z-index: -1;
-  transition: background 0.3s ease;
+  background-color: var(--bg-app);
+  transition: background-color 0.3s ease;
 }
 
 .bg-reframe-surface {
