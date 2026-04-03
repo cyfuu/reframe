@@ -172,7 +172,7 @@ export function WriteLog() {
     setSelectedCommits(new Set());
   }
 
-  if (!project) return <div className="text-center text-gray-500 py-12 animate-pulse">Loading workspace...</div>;
+  if (!project) return <div className="text-center text-[var(--text-muted)] py-12 animate-pulse">Loading workspace...</div>;
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 min-h-[calc(100vh-8rem)] md:min-h-0 md:h-[80vh]">
@@ -183,36 +183,36 @@ export function WriteLog() {
         transition={{ duration: 0.5 }}
       >
         <div className="mb-6">
-          <Link to={`/project/${id}`} className="text-gray-500 hover:text-white transition-colors text-sm mb-2 inline-block">
-            ← Back to Timeline
+          <Link to={`/project/${id}`} className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors text-sm mb-2 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Timeline
           </Link>
-          {/* Dynamic Header! */}
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-[var(--text-main)]">
             {isEditing ? 'Editing release for' : 'Drafting release for'} {project.name}
           </h1>
         </div>
 
         <form onSubmit={handlePublish} className="flex-1 flex flex-col gap-5">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Title</label>
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">Title</label>
               <input required type="text" value={title} onChange={e => setTitle(e.target.value)} 
-                className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 transition-all" 
+                className="w-full bg-[var(--surface)] border border-[var(--border-subtle)] rounded-lg px-4 py-2.5 text-[var(--text-main)] focus:border-[var(--accent)] transition-all outline-none" 
                 placeholder='e.g., Shipped the new dark theme 🌙'
               />
             </div>
             
-            <div className="w-40">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Tag</label>
+            <div className="w-full sm:w-40">
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">Tag</label>
               <div className="relative">
-                <select value={tag} onChange={e => setTag(e.target.value)} className="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
+                <select value={tag} onChange={e => setTag(e.target.value)} className="w-full bg-[var(--surface)] border border-[var(--border-subtle)] rounded-lg pl-3 pr-10 py-2.5 text-[var(--text-main)] focus:outline-none focus:border-[var(--accent)] transition-all appearance-none cursor-pointer">
                   <option value="🚀 Feature">🚀 Feature</option>
                   <option value="🐛 Bugfix">🐛 Bugfix</option>
                   <option value="✨ Polish">✨ Polish</option>
                   <option value="🔒 Security">🔒 Security</option>
                   <option value="📦 Release">📦 Release</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--text-muted)]">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
               </div>
@@ -220,15 +220,14 @@ export function WriteLog() {
           </div>
 
           <div className="flex-1 flex flex-col relative">
-            <label className="block text-sm font-medium text-gray-400 mb-1">Changelog Notes</label>
+            <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">Changelog Notes</label>
             <textarea required value={content} onChange={e => setContent(e.target.value)} 
-              className="w-full bg-[#0a0a0a]/50 border border-gray-800 rounded-lg p-4 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none min-h-[300px] flex-1 md:flex-none"
+              className="w-full bg-[var(--surface)]/50 border border-[var(--border-subtle)] rounded-lg p-4 text-[var(--text-main)] focus:outline-none focus:border-[var(--accent)] transition-colors resize-none min-h-[300px] flex-1 md:flex-none"
               placeholder="What did you build today?"
             />
           </div>
 
-          <button type="submit" disabled={isSaving} className="w-full bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50 mt-2">
-            {/* Dynamic Button Text! */}
+          <button type="submit" disabled={isSaving} className="w-full bg-[var(--text-main)] text-[var(--bg-app)] px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-50 mt-2">
             {isSaving ? 'Saving...' : isEditing ? 'Update Changelog' : 'Publish Changelog'}
           </button>
         </form>
@@ -236,36 +235,36 @@ export function WriteLog() {
 
       {/* GitHub Assistant Sidebar */}
       <motion.div 
-        className="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col overflow-hidden shrink-0 min-h-[400px] md:min-h-0 md:h-full"
+        className="w-full md:w-80 lg:w-96 bg-[var(--surface)] border border-[var(--border-subtle)] rounded-xl flex flex-col overflow-hidden shrink-0 min-h-[400px] md:min-h-0 md:h-full"
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="p-4 border-b border-gray-800 bg-[#050505]">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">GitHub Commits</h2>
-          <p className="text-xs text-gray-500 truncate">{project.repo_url}</p>
+        <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-app)]/50">
+          <h2 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider">GitHub Commits</h2>
+          <p className="text-xs text-[var(--text-muted)] truncate">{project.repo_url}</p>
         </div>
         
         <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
           {isLoadingCommits ? (
-            <div className="text-center text-gray-500 py-8 animate-pulse text-sm">Loading commits...</div>
+            <div className="text-center text-[var(--text-muted)] py-8 animate-pulse text-sm">Loading commits...</div>
           ) : commits.length === 0 ? (
-            <div className="text-center text-gray-500 py-8 text-sm border border-dashed border-gray-800 m-2 rounded-xl">All recent commits have been documented!</div>
+            <div className="text-center text-[var(--text-muted)] py-8 text-sm border border-dashed border-[var(--border-subtle)] m-2 rounded-xl">All recent commits documented!</div>
           ) : (
             commits.map((c) => {
               const isSelected = selectedCommits.has(c.sha);
               return (
-                <div key={c.sha} onClick={() => toggleCommit(c.sha)} className={`p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'bg-blue-500/10 border-blue-500/50' : 'bg-[#050505] border-gray-800 hover:border-gray-600'}`}>
-                  <p className={`text-sm mb-1 line-clamp-2 ${isSelected ? 'text-blue-100' : 'text-gray-300'}`}>{c.commit.message}</p>
-                  <p className="text-xs text-gray-600 font-mono">{new Date(c.commit.author.date).toLocaleDateString()} • {c.sha.substring(0, 7)}</p>
+                <div key={c.sha} onClick={() => toggleCommit(c.sha)} className={`p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--bg-app)]/30 border-[var(--border-subtle)] hover:border-[var(--text-muted)]'}`}>
+                  <p className={`text-sm mb-1 line-clamp-2 ${isSelected ? 'text-[var(--text-main)]' : 'text-[var(--text-muted)]'}`}>{c.commit.message}</p>
+                  <p className="text-xs opacity-50 font-mono">{new Date(c.commit.author.date).toLocaleDateString()} • {c.sha.substring(0, 7)}</p>
                 </div>
               );
             })
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-800 bg-[#050505]">
-          <button onClick={handleAppendToDraft} disabled={selectedCommits.size === 0} className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-app)]/50">
+          <button onClick={handleAppendToDraft} disabled={selectedCommits.size === 0} className="w-full bg-[var(--accent)] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
             {selectedCommits.size === 0 ? 'Select commits to append' : `Append ${selectedCommits.size} to Draft`}
           </button>
         </div>

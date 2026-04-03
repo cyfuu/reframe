@@ -68,7 +68,6 @@ export function ProjectTimeline() {
     };
 
     handleScroll();
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => window.removeEventListener('scroll', handleScroll);
@@ -142,7 +141,7 @@ export function ProjectTimeline() {
   }
 
   if (isLoading) {
-    return <div className="text-center text-gray-500 py-12 animate-pulse">Loading timeline...</div>;
+    return <div className="text-center text-[var(--text-muted)] py-12 animate-pulse">Loading timeline...</div>;
   }
 
   if (!project) {
@@ -150,7 +149,6 @@ export function ProjectTimeline() {
   }
 
   const uniqueTags = ['All', ...Array.from(new Set(logs.map(log => log.tag)))];
-
   const filteredLogs = selectedTag === 'All' ? logs : logs.filter(log => log.tag === selectedTag);
 
   function handleCopyLink(logId: string) {
@@ -172,16 +170,16 @@ export function ProjectTimeline() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <Link to="/projects" className="text-gray-500 hover:text-white transition-colors text-sm mb-4 inline-block">
+        <Link to="/projects" className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors text-sm mb-4 inline-block">
           ← Back to Dashboard
         </Link>
         <div className="min-w-0">
-          <h1 className="text-3xl font-bold mb-2 text-white break-words">{project.name}</h1>
+          <h1 className="text-3xl font-bold mb-2 text-[var(--text-main)] break-words">{project.name}</h1>
           <a 
             href={`https://github.com/${project.repo_url}`} 
             target="_blank" 
             rel="noreferrer"
-            className="text-blue-400 hover:underline text-sm break-all"
+            className="text-[var(--accent)] hover:underline text-sm break-all"
           >
             github.com/{project.repo_url}
           </a>
@@ -191,7 +189,7 @@ export function ProjectTimeline() {
           <div className="w-full sm:w-auto mt-2 sm:mt-0">
             <Link 
               to={`/project/${project.id}/write`}
-              className="block w-full sm:w-auto text-center bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              className="block w-full sm:w-auto text-center bg-[var(--text-main)] text-[var(--bg-app)] px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-colors shadow-lg"
             >
               + Add Changelog
             </Link>
@@ -214,8 +212,8 @@ export function ProjectTimeline() {
               onClick={() => setSelectedTag(tag)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 selectedTag === tag 
-                  ? 'bg-white text-black shadow-[0_0_10px_rgba(255,255,255,0.2)]' 
-                  : 'bg-[#0a0a0a] border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600'
+                  ? 'bg-[var(--text-main)] text-[var(--bg-app)] shadow-md' 
+                  : 'bg-[var(--surface)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--text-muted)]'
               }`}
             >
               {tag}
@@ -227,16 +225,16 @@ export function ProjectTimeline() {
       {/* Timeline Section */}
       <div>
         {logs.length === 0 ? (
-          <div className="text-center border border-dashed border-gray-800 rounded-xl py-12 px-4">
-            <h3 className="text-lg font-medium text-white mb-2">No changelogs yet</h3>
+          <div className="text-center border border-dashed border-[var(--border-subtle)] rounded-xl py-12 px-4 bg-[var(--surface)]/30">
+            <h3 className="text-lg font-medium text-[var(--text-main)] mb-2">No changelogs yet</h3>
             {user ? (
-              <p className="text-gray-500 text-sm">Click "+ Add Changelog" above to draft your first release note.</p>
+              <p className="text-[var(--text-muted)] text-sm">Click "+ Add Changelog" above to draft your first release note.</p>
             ) : (
-              <p className="text-gray-500 text-sm">The developer hasn't published any updates for this project yet. Check back soon!</p>
+              <p className="text-[var(--text-muted)] text-sm">The developer hasn't published any updates for this project yet. Check back soon!</p>
             )}
           </div>
         ) : filteredLogs.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-[var(--text-muted)]">
             No changelogs found for "{selectedTag}".
           </div>
         ) : (
@@ -247,32 +245,32 @@ export function ProjectTimeline() {
               <motion.div 
                 key={log.id} 
                 id={`log-${log.id}`} 
-                className="mobile-timeline-item border-l-2 border-gray-800 pl-6 relative ml-3 group pb-8 last:pb-0"
+                className="mobile-timeline-item border-l-2 border-[var(--border-subtle)] pl-6 relative ml-3 group pb-8 last:pb-0"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
               >
-                <div className={`absolute w-3 h-3 rounded-full -left-[7px] top-1.5 transition-all duration-300 ease-out bg-gray-600 shadow-none
-                  md:group-hover:scale-150 md:group-hover:bg-white md:group-hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]
-                  ${isMobileActive ? 'max-md:scale-150 max-md:bg-white max-md:shadow-[0_0_20px_rgba(255,255,255,0.8)]' : ''}
+                <div className={`absolute w-3 h-3 rounded-full -left-[7px] top-1.5 transition-all duration-300 ease-out bg-[var(--text-muted)] shadow-none
+                  md:group-hover:scale-150 md:group-hover:bg-[var(--text-main)] md:group-hover:shadow-[0_0_20px_var(--text-main)]
+                  ${isMobileActive ? 'max-md:scale-150 max-md:bg-[var(--text-main)] max-md:shadow-[0_0_20px_var(--text-main)]' : ''}
                 `}></div>
               
-              <div className="text-sm text-gray-400 font-mono mb-3 flex flex-wrap items-center gap-y-2">
+              <div className="text-sm text-[var(--text-muted)] font-mono mb-3 flex flex-wrap items-center gap-y-2">
                 <span className="whitespace-nowrap">
                   {log.display_date || new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
                 
-                <span className="mx-2 text-gray-600">•</span>
+                <span className="mx-2 opacity-30">•</span>
                 <span className="whitespace-nowrap">{log.tag}</span>
                 
                 {log.commit_hash && log.commit_hash !== 'N/A' && log.commit_hash.split(',').map((hash: string) => (
                   <span key={hash} className="flex items-center whitespace-nowrap">
-                    <span className="mx-2 text-gray-600">•</span>
+                    <span className="mx-2 opacity-30">•</span>
                     <a 
                       href={`https://github.com/${project.repo_url}/commit/${hash}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="bg-gray-800/50 hover:bg-gray-700 text-gray-300 px-2 py-0.5 rounded text-xs transition-colors"
+                      className="bg-[var(--surface)] hover:border-[var(--accent)] text-[var(--text-main)] border border-[var(--border-subtle)] px-2 py-0.5 rounded text-xs transition-colors"
                       title="View commit on GitHub"
                     >
                       {hash.substring(0, 7)}
@@ -281,37 +279,43 @@ export function ProjectTimeline() {
                 ))}
               </div>
               
-              <div className={`bg-[#0a0a0a] border rounded-xl p-6 mt-2 relative transition-all duration-300 ease-out border-gray-800
-                md:group-hover:-translate-y-1 md:group-hover:border-gray-600 md:group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)]
-                ${isMobileActive ? 'max-md:-translate-y-1 max-md:border-gray-600 max-md:shadow-[0_8px_30px_rgb(0,0,0,0.5)]' : ''}
+              <div className={`bg-[var(--surface)] border rounded-xl p-6 mt-2 relative transition-all duration-300 ease-out border-[var(--border-subtle)]
+                md:group-hover:-translate-y-1 md:group-hover:border-[var(--accent)]/30 md:group-hover:shadow-lg
+                ${isMobileActive ? 'max-md:-translate-y-1 max-md:border-[var(--accent)]/30 max-md:shadow-lg' : ''}
               `}>
                 <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-xl font-bold text-white">{log.title}</h2>
+                  <h2 className="text-xl font-bold text-[var(--text-main)]">{log.title}</h2>
                   <button 
                     onClick={() => handleCopyLink(log.id)}
-                    className="text-gray-600 hover:text-gray-300 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                    className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                     title="Copy direct link to this update"
                   >
-                    {copiedId === log.id ? '✅' : '🔗'}
+                    {copiedId === log.id ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    )}
                   </button>
                 </div>
-                <div className="prose prose-invert max-w-none text-gray-300 text-sm whitespace-pre-wrap break-words">
+                <div className="prose prose-invert max-w-none text-[var(--text-muted)] text-sm whitespace-pre-wrap break-words">
                   {log.description}
                 </div>
 
                 {user && (
-                  <div className="mt-6 pt-4 border-t border-gray-800/50 flex gap-4 text-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <div className="mt-6 pt-4 border-t border-[var(--border-subtle)] flex gap-4 text-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <Link
                       to={`/project/${id}/edit/${log.id}`} 
-                      className="text-gray-400 hover:text-blue-400 transition-colors flex items-center gap-1"
+                      className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors flex items-center gap-1"
                     >
-                      ✏️ Edit
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      Edit
                     </Link>
                     <button 
                       onClick={() => handleDelete(log.id)}
-                      className="text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                      className="text-[var(--text-muted)] hover:text-red-500 transition-colors flex items-center gap-1"
                     >
-                      🗑️ Delete
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                      Delete
                     </button>
                   </div>
                 )}
@@ -327,7 +331,7 @@ export function ProjectTimeline() {
           <button
             onClick={loadMoreLogs}
             disabled={isLoadingMore}
-            className="px-6 py-2 bg-[#0a0a0a] border border-gray-800 text-white rounded-full text-sm font-medium hover:bg-gray-800 hover:border-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-[var(--surface)] border border-[var(--border-subtle)] text-[var(--text-main)] rounded-full text-sm font-medium hover:border-[var(--text-muted)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoadingMore ? 'Loading...' : 'Load More Updates'}
           </button>
