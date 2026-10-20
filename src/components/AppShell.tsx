@@ -1,6 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import logo from '/logo.svg';
 import { useAuth } from '../lib/auth';
 import { useTheme } from '../lib/theme';
 
@@ -34,7 +33,7 @@ export function AppShell() {
   const { isAdmin, signOut } = useAuth();
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col overflow-x-clip">
       <Toaster
         position="bottom-right"
         toastOptions={{
@@ -55,16 +54,8 @@ export function AppShell() {
       <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-sm">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-5 sm:px-8">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2.5 text-ink">
-              <img
-                src={logo}
-                alt=""
-                width={20}
-                height={20}
-                style={{ filter: 'var(--logo-invert)' }}
-                className="size-5 object-contain"
-              />
-              <span className="font-mono text-sm font-semibold tracking-tight">reframe</span>
+            <Link to="/" className="font-mono text-sm font-semibold tracking-tight text-ink">
+              reframe
             </Link>
 
             <nav aria-label="Primary">
@@ -98,17 +89,24 @@ export function AppShell() {
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-5 font-mono text-xs text-mute sm:px-8">
-          <span>reframe — commits, reframed.</span>
-          {isAdmin ? (
-            <button type="button" onClick={() => void signOut()} className="transition-colors hover:text-ink">
-              sign out
-            </button>
-          ) : (
-            <Link to="/login" className="transition-colors hover:text-ink">
-              admin
-            </Link>
-          )}
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-5 font-mono text-xs text-mute sm:px-8">
+          <span>© {new Date().getFullYear()} reframe</span>
+
+          <div className="flex items-center gap-5">
+            <a
+              href="https://github.com/cyfuu/reframe"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-ink"
+            >
+              source <span aria-hidden="true">↗</span>
+            </a>
+            {isAdmin && (
+              <button type="button" onClick={() => void signOut()} className="transition-colors hover:text-ink">
+                sign out
+              </button>
+            )}
+          </div>
         </div>
       </footer>
     </div>

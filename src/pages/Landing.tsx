@@ -1,5 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logo from '/logo.svg';
 import { useAuth } from '../lib/auth';
 
 const RAW_COMMITS = [
@@ -20,12 +21,23 @@ export function Landing() {
 
   return (
     <motion.div
-      className="max-w-4xl pt-6 md:pt-16"
+      className="max-w-5xl pt-6 md:pt-16"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl md:text-6xl">
+      <div className="relative isolate">
+        <img
+          src={logo}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          style={{ filter: 'var(--logo-invert)' }}
+          className="pointer-events-none absolute -right-16 -top-6 -z-10 w-64 select-none opacity-[0.07] sm:-right-10 sm:w-80 lg:right-0 lg:top-1/2 lg:w-[26rem] lg:-translate-y-1/2 lg:translate-x-[8%] lg:opacity-90 xl:translate-x-[16%]"
+        />
+
+        <div className="lg:max-w-[36rem]">
+      <h1 className="mt-4 max-w-3xl text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl md:text-6xl lg:text-5xl xl:text-[3.25rem]">
         Commits are what happened. Releases are what mattered.
       </h1>
 
@@ -38,6 +50,8 @@ export function Landing() {
         <Link to="/projects" className="btn btn-primary px-5 py-2.5">
           Browse projects <span aria-hidden="true">→</span>
         </Link>
+      </div>
+        </div>
       </div>
 
       {/* raw -> reframed */}

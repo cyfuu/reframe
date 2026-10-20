@@ -84,6 +84,7 @@
   html {
     background-color: var(--bg);
     -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
   }
 
   body {

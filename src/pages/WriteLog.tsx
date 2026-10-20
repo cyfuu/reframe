@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
@@ -14,6 +14,21 @@ interface GithubCommit {
     message: string;
     author: { date: string };
   };
+}
+
+/** Removes the last line equal to `line`. Returns null when the line isn't there (e.g. the user edited it). */
+function removeBulletLine(text: string, line: string): string | null {
+  const lines = text.split('\n');
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trimEnd() === line) {
+      lines.splice(i, 1);
+      return lines
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/^\n+|\n+$/g, '');
+    }
+  }
+  return null;
 }
 
 export function WriteLog() {
@@ -33,6 +48,8 @@ export function WriteLog() {
   const [isLoadingCommits, setIsLoadingCommits] = useState(false);
   const [selectedCommits, setSelectedCommits] = useState<Set<string>>(new Set());
   const [attachedShas, setAttachedShas] = useState<Set<string>>(new Set());
+  // sha -> the exact bullet line appended to the notes, so an append can be undone
+  const [appendedLines, setAppendedLines] = useState<Record<string, string>>({});
 
   const isEditing = !!logId;
 
@@ -166,20 +183,54 @@ export function WriteLog() {
   }
 
   function handleAppendToDraft() {
-    const bulletPoints = Array.from(selectedCommits)
-      .map((sha) => {
-        const found = commits.find((c) => c.sha === sha);
-        return found ? `- ${found.commit.message.split('\n')[0]}` : '';
-      })
-      .filter((msg) => msg !== '')
-      .join('\n');
+    const lines: Record<string, string> = {};
+    for (const sha of selectedCommits) {
+      const found = commits.find((c) => c.sha === sha);
+      if (found) lines[sha] = `- ${found.commit.message.split('\n')[0]}`;
+    }
+    const shas = Object.keys(lines);
+    if (shas.length === 0) return;
 
+    const bulletPoints = shas.map((sha) => lines[sha]).join('\n');
     setContent((prev) => prev + (prev ? '\n\n' : '') + bulletPoints);
-    setAttachedShas((prev) => new Set([...prev, ...selectedCommits]));
+    setAttachedShas((prev) => new Set([...prev, ...shas]));
+    setAppendedLines((prev) => ({ ...prev, ...lines }));
 
-    toast.success(`Appended ${selectedCommits.size} commit(s) to draft`);
+    toast.success(`Appended ${shas.length} commit${shas.length === 1 ? '' : 's'} to draft`);
     setSelectedCommits(new Set());
   }
+
+  function handleUndoAppend(sha: string) {
+    const line = appendedLines[sha];
+
+    setAttachedShas((prev) => {
+      const next = new Set(prev);
+      next.delete(sha);
+      return next;
+    });
+    setAppendedLines((prev) => {
+      const next = { ...prev };
+      delete next[sha];
+      return next;
+    });
+
+    if (!line) {
+      // Attached earlier (saved with this entry), so there's no known line to remove.
+      toast('Commit detached from this entry');
+      return;
+    }
+
+    const next = removeBulletLine(content, line);
+    if (next === null) {
+      toast("Commit detached. Its line in your notes was edited, so it wasn't removed.");
+    } else {
+      setContent(next);
+      toast.success('Append undone');
+    }
+  }
+
+  const availableCommits = commits.filter((c) => !attachedShas.has(c.sha));
+  const appendedCommits = commits.filter((c) => attachedShas.has(c.sha));
 
   if (!project) {
     return <p className="py-12 text-center font-mono text-sm text-mute">loading workspace…</p>;
@@ -242,7 +293,7 @@ export function WriteLog() {
                     aria-pressed={showPreview === value}
                     onClick={() => setShowPreview(value as boolean)}
                     className={`rounded px-2 py-0.5 transition-colors ${
-                      showPreview === value ? 'bg-ink text-bg' : 'text-mute hover:text-ink'
+                      showPreview === value ? 'bg-accent text-accent-ink' : 'text-mute hover:text-ink'
                     }`}
                   >
                     {String(text)}
@@ -288,47 +339,103 @@ export function WriteLog() {
         <div className="custom-scrollbar flex-1 overflow-y-auto">
           {isLoadingCommits ? (
             <p className="py-8 text-center font-mono text-xs text-mute">loading commits…</p>
-          ) : commits.length === 0 ? (
-            <p className="m-3 rounded-md border border-dashed border-line-strong py-8 text-center font-mono text-xs text-mute">
-              all recent commits are documented.
-            </p>
           ) : (
-            <ul className="divide-y divide-line">
-              {commits.map((c) => {
-                const isSelected = selectedCommits.has(c.sha);
-                return (
-                  <li key={c.sha}>
-                    <button
-                      type="button"
-                      onClick={() => toggleCommit(c.sha)}
-                      aria-pressed={isSelected}
-                      className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${
-                        isSelected ? 'bg-accent/10' : 'hover:bg-sunken'
-                      }`}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`mt-1 flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border ${
-                          isSelected ? 'border-accent bg-accent text-accent-ink' : 'border-line-strong'
-                        }`}
-                      >
-                        {isSelected && (
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="line-clamp-2 text-sm text-ink">{c.commit.message}</span>
-                        <span className="mt-1 block font-mono text-xs text-mute">
-                          {c.sha.substring(0, 7)} · {new Date(c.commit.author.date).toLocaleDateString()}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            <>
+              {appendedCommits.length > 0 && (
+                <section aria-label="Appended commits" className="border-b border-line bg-sunken/60">
+                  <h3 className="px-4 pb-1 pt-3 font-mono text-[11px] uppercase tracking-wider text-mute">
+                    appended <span className="opacity-60">{appendedCommits.length}</span>
+                  </h3>
+                  <ul className="custom-scrollbar max-h-44 overflow-y-auto pb-1">
+                    <AnimatePresence initial={false}>
+                      {appendedCommits.map((c) => (
+                        <motion.li
+                          key={c.sha}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.18, ease: 'easeOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="flex items-center gap-3 px-4 py-2">
+                            <span
+                              aria-hidden="true"
+                              className="flex size-3.5 shrink-0 items-center justify-center rounded-[3px] bg-line-strong/40 text-mute"
+                            >
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm text-mute">{c.commit.message.split('\n')[0]}</span>
+                              <span className="block font-mono text-[11px] text-mute/80">{c.sha.substring(0, 7)}</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleUndoAppend(c.sha)}
+                              aria-label={`Undo append of commit ${c.sha.substring(0, 7)}`}
+                              className="shrink-0 rounded border border-line px-2 py-0.5 font-mono text-xs text-mute transition-colors hover:border-line-strong hover:text-ink"
+                            >
+                              undo
+                            </button>
+                          </div>
+                        </motion.li>
+                      ))}
+                    </AnimatePresence>
+                  </ul>
+                </section>
+              )}
+
+              {availableCommits.length === 0 ? (
+                <p className="m-3 rounded-md border border-dashed border-line-strong py-8 text-center font-mono text-xs text-mute">
+                  {commits.length === 0 ? 'all recent commits are documented.' : 'every recent commit is appended.'}
+                </p>
+              ) : (
+                <ul className="divide-y divide-line">
+                  <AnimatePresence initial={false}>
+                    {availableCommits.map((c) => {
+                      const isSelected = selectedCommits.has(c.sha);
+                      return (
+                        <motion.li
+                          key={c.sha}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.18, ease: 'easeOut' }}
+                          className="overflow-hidden"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggleCommit(c.sha)}
+                            aria-pressed={isSelected}
+                            className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${
+                              isSelected ? 'bg-accent/25' : 'hover:bg-sunken'
+                            }`}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`mt-1 flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border ${
+                                isSelected ? 'border-ink bg-accent text-accent-ink' : 'border-line-strong'
+                              }`}
+                            >
+                              {isSelected && (
+                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              )}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="line-clamp-2 text-sm text-ink">{c.commit.message}</span>
+                              <span className="mt-1 block font-mono text-xs text-mute">
+                                {c.sha.substring(0, 7)} · {new Date(c.commit.author.date).toLocaleDateString()}
+                              </span>
+                            </span>
+                          </button>
+                        </motion.li>
+                      );
+                    })}
+                  </AnimatePresence>
+                </ul>
+              )}
+            </>
           )}
         </div>
 
