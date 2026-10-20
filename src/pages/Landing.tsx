@@ -1,64 +1,86 @@
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import logo from '/logo.svg'; 
+import { useAuth } from '../contexts/auth';
+
+const RAW_COMMITS = [
+  ['a91c3f2', 'fix typo'],
+  ['7be0d14', 'adjust padding'],
+  ['c40e8a9', 'wip'],
+  ['2d5f6b1', "merge branch 'main'"],
+  ['e83a7c0', 'fix padding again'],
+  ['5f19d0b', 'add theme toggle'],
+];
 
 export function Landing() {
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
 
-  if (user) {
+  if (isAdmin) {
     return <Navigate to="/projects" replace />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-transparent relative">
-      {/* Hero Section */}
-      <div className="max-w-3xl space-y-6 flex flex-col items-center z-10">
-        
-        <motion.img 
-          src={logo} 
-          alt="Reframe Logo" 
-          style={{ filter: 'var(--logo-invert)' }}
-          className="w-24 h-24 mb-4 object-contain transition-all duration-300 drop-shadow-[0_0_15px_var(--border-subtle)]" 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        />
+    <motion.div
+      className="max-w-4xl pt-6 md:pt-16"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+    >
+      <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl md:text-6xl">
+        Commits are what happened. Releases are what mattered.
+      </h1>
 
-        <motion.h1 
-          className="text-5xl md:text-7xl font-bold text-[var(--text-main)] tracking-tight"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-        >
-          Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700">Reframe.</span>
-        </motion.h1>
-        
-        <motion.p 
-          className="text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          This is where I document the journey, ship updates, and share the evolution of my projects.
-        </motion.p>
+      <p className="mt-6 max-w-2xl text-lg leading-relaxed text-mute">
+        Reframe turns a pile of commits into a readable timeline: what shipped, why it was built
+        that way, and what I learned along the way.
+      </p>
 
-        <motion.div 
-          className="pt-8"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.6 }}
-        >
-          <Link 
-            to="/projects" 
-            className="inline-flex items-center justify-center px-8 py-3.5 text-base font-medium rounded-full transition-all 
-                       bg-[var(--text-main)] text-[var(--bg-app)]
-                       hover:opacity-90 shadow-[0_0_20px_var(--border-subtle)]"
-          >
-            View Projects
-          </Link>
-        </motion.div>
+      <div className="mt-8">
+        <Link to="/projects" className="btn btn-primary px-5 py-2.5">
+          Browse projects <span aria-hidden="true">→</span>
+        </Link>
       </div>
-    </div>
+
+      {/* raw -> reframed */}
+      <div
+        className="mt-16 grid gap-4 md:mt-24 md:grid-cols-[1fr_auto_1.25fr] md:items-start"
+        role="img"
+        aria-label="Example: six raw commits are grouped into one release entry"
+      >
+        <div className="rounded-md border border-line bg-sunken p-4 font-mono text-xs leading-6">
+          <p className="mb-2 text-mute">$ git log --oneline</p>
+          {RAW_COMMITS.map(([sha, msg]) => (
+            <p key={sha} className="truncate text-mute">
+              <span className="text-ink">{sha}</span> {msg}
+            </p>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-center font-mono text-xl text-mute md:h-full" aria-hidden="true">
+          <span className="rotate-90 md:rotate-0">→</span>
+        </div>
+
+        <div className="relative rounded-md border border-line bg-surface p-4 pl-8">
+          <span
+            aria-hidden="true"
+            className="absolute left-4 top-[21px] size-[11px] rounded-full bg-[var(--k-feature)]"
+          />
+          <div className="flex flex-wrap items-center gap-x-3 font-mono text-xs leading-5 text-mute">
+            <span>Oct 12, 2026</span>
+            <span className="rounded-sm bg-[color-mix(in_srgb,var(--k-feature)_14%,transparent)] px-1.5 py-px text-[color-mix(in_srgb,var(--k-feature)_72%,var(--ink))]">
+              feature
+            </span>
+            <span className="rounded border border-line px-1.5 py-px text-ink">5f19d0b</span>
+          </div>
+          <p className="mt-2 text-base font-semibold tracking-tight text-ink">
+            A theme that remembers you
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-mute marker:text-line-strong">
+            <li>Follows your system setting until you pick one</li>
+            <li>No flash of the wrong theme on load</li>
+            <li>Fixed spacing regressions along the way</li>
+          </ul>
+        </div>
+      </div>
+    </motion.div>
   );
 }

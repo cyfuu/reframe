@@ -1,134 +1,150 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ProjectCard } from '../components/ProjectCard';
-import { supabase } from '../lib/supabase';
-import type { Project } from '../types';
-import { useAuth } from '../contexts/AuthContext';
-import { NewProjectModal } from '../components/NewProjectModal';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/auth';
+import { formatDate } from '../lib/format';
+import { ProjectRow } from '../components/ProjectRow';
+import { NewProjectModal } from '../components/NewProjectModal';
+import type { Project, ProjectRecord } from '../types';
+
+type ProjectWithLogs = ProjectRecord & { logs: { id: string; created_at: string }[] | null };
+
+function toProject(row: ProjectWithLogs): { project: Project; activityAt: string } {
+  const logs = row.logs ?? [];
+  const latest = logs.reduce<string | null>(
+    (acc, l) => (!acc || l.created_at > acc ? l.created_at : acc),
+    null,
+  );
+
+  return {
+    project: {
+      id: row.id,
+      name: row.name,
+      repoUrl: row.repo_url,
+      role: row.role === 'contributor' ? 'contributor' : 'owner',
+      lastRelease: latest ? formatDate(latest) : null,
+      logCount: logs.length,
+    },
+    activityAt: latest ?? row.created_at,
+  };
+}
 
 export function Dashboard() {
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    let cancelled = false;
 
-  async function fetchProjects() {
-    setIsLoading(true);
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*, logs(id)') 
-      .order('created_at', { ascending: false });
+    async function load() {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*, logs(id, created_at)')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching projects:', error.message);
-      toast.error('Failed to load projects'); 
-    } else if (data) {
-      const formattedProjects: Project[] = data.map((row) => ({
-        id: row.id,
-        name: row.name,
-        repoUrl: row.repo_url,
-        lastUpdated: new Date(row.created_at).toLocaleDateString('en-US', {
-          month: 'long', day: 'numeric', year: 'numeric'
-        }),
-        logCount: row.logs ? row.logs.length : 0 
-      }));
-      setProjects(formattedProjects);
+      if (cancelled) return;
+
+      if (error) {
+        console.error('Error fetching projects:', error.message);
+        toast.error('Failed to load projects');
+      } else if (data) {
+        const mapped = (data as ProjectWithLogs[]).map(toProject);
+        mapped.sort((a, b) => b.activityAt.localeCompare(a.activityAt));
+        setProjects(mapped.map((m) => m.project));
+      }
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }
 
-  async function handleDeleteProject(e: React.MouseEvent, projectId: string) {
-    e.preventDefault();
-    const isConfirmed = window.confirm("Are you absolutely sure? This will delete the project and ALL its changelogs!");
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
+  async function handleDeleteProject(projectId: string) {
+    const isConfirmed = window.confirm(
+      'Delete this project and ALL of its release notes? This cannot be undone.',
+    );
     if (!isConfirmed) return;
 
-    const toastId = toast.loading('Deleting project...');
+    const toastId = toast.loading('Deleting project…');
     const { error } = await supabase.from('projects').delete().eq('id', projectId);
-    
+
     if (error) {
       toast.error(`Error deleting project: ${error.message}`, { id: toastId });
     } else {
-      setProjects(projects.filter(p => p.id !== projectId));
-      toast.success('Project deleted successfully', { id: toastId });
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      toast.success('Project deleted', { id: toastId });
     }
   }
 
   return (
-    <div className="w-full max-w-4xl">
-      <motion.div 
-        className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
+    <motion.div
+      className="w-full"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+    >
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2 tracking-tight text-[var(--text-main)]">Projects</h1>
-          <p className="text-[var(--text-muted)]">Select a repository to view its changelog.</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Projects</h1>
+          <p className="mt-2 max-w-xl text-mute">
+            Repositories I’ve built or contributed to, each with its own release timeline.
+          </p>
         </div>
-        
-        <div className="w-full sm:w-auto">
-          {user && (
-            <button 
-              onClick={() => setIsModalOpen(true)} 
-              className="w-full sm:w-auto block text-center bg-[var(--text-main)] text-[var(--bg-app)] px-6 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-all shadow-lg active:scale-95"
-            >
-              + New Project
-            </button>
-          )}
-        </div>
-      </motion.div>
+
+        {isAdmin && (
+          <button type="button" onClick={() => setIsModalOpen(true)} className="btn btn-primary self-start sm:self-auto">
+            + add project
+          </button>
+        )}
+      </div>
 
       {isLoading ? (
-        <div className="text-center text-[var(--text-muted)] py-12 animate-pulse">
-          Loading projects from Supabase...
-        </div>
+        <ul className="divide-y divide-line rounded-md border border-line" aria-busy="true" aria-label="Loading projects">
+          {[0, 1, 2].map((i) => (
+            <li key={i} className="px-5 py-4">
+              <div className="h-4 w-40 animate-pulse rounded bg-sunken" />
+              <div className="mt-2 h-3 w-56 animate-pulse rounded bg-sunken" />
+            </li>
+          ))}
+        </ul>
       ) : projects.length === 0 ? (
-        <div className="text-center border border-dashed border-[var(--border-subtle)] rounded-xl py-12 text-[var(--text-muted)] bg-[var(--surface)]/30">
-          No projects found. Click "New Project" to add one!
+        <div className="rounded-md border border-dashed border-line-strong px-6 py-14 text-center">
+          <p className="font-mono text-sm text-mute">
+            {isAdmin ? 'No projects yet. Add your first repository.' : 'No projects published yet.'}
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project, index) => (
-            <motion.div 
-              key={project.id} 
-              className="relative group"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-            >
-              <Link to={`/project/${project.id}`} className="block">
-                 <ProjectCard project={project} onClick={() => {}} />
-              </Link>
-
-              {user && (
-                <button 
-                  onClick={(e) => handleDeleteProject(e, project.id)}
-                  className="absolute bottom-4 right-4 bg-[var(--surface)] border border-[var(--border-subtle)] p-2 rounded-lg text-[var(--text-muted)] hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/5 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 z-10 shadow-sm"
-                  title="Delete Project"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                </button>
-              )}
-            </motion.div>
-          ))}
-        </div>
+        <>
+          <div className="hidden grid-cols-[minmax(0,1fr)_6.5rem_7rem_8.5rem] gap-x-6 px-5 pb-2 font-mono text-[11px] uppercase tracking-wider text-mute sm:grid" aria-hidden="true">
+            <span>repository</span>
+            <span>role</span>
+            <span className="text-right">entries</span>
+            <span className="text-right">last release</span>
+          </div>
+          <ul className="divide-y divide-line overflow-hidden rounded-md border border-line">
+            {projects.map((project) => (
+              <ProjectRow key={project.id} project={project} isAdmin={isAdmin} onDelete={handleDeleteProject} />
+            ))}
+          </ul>
+        </>
       )}
 
-      <NewProjectModal 
-        isOpen={isModalOpen} 
+      <NewProjectModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {
-          fetchProjects();
-          toast.success('Project created!');
-        }} 
+          setRefreshKey((k) => k + 1);
+          toast.success('Project added');
+        }}
         existingProjects={projects}
       />
-    </div>
+    </motion.div>
   );
 }
