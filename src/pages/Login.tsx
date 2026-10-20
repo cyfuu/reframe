@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
+import { CAPTCHA_ENABLED } from '../lib/captcha';
+import { Turnstile } from '../components/Turnstile';
 
 export function Login() {
   const { isAdmin } = useAuth();
@@ -10,6 +12,9 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const isVerifying = CAPTCHA_ENABLED && !captchaToken;
 
   if (isAdmin) {
     return <Navigate to="/projects" replace />;
@@ -20,11 +25,18 @@ export function Login() {
     setIsLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: captchaToken ? { captchaToken } : undefined,
+    });
 
     if (error) {
       setError(error.message);
       setIsLoading(false);
+      // Tokens are single-use: a failed attempt needs a fresh check.
+      setCaptchaToken(null);
+      setCaptchaKey((k) => k + 1);
     } else {
       navigate('/projects');
     }
@@ -70,8 +82,10 @@ export function Login() {
           </p>
         )}
 
-        <button type="submit" disabled={isLoading} className="btn btn-primary w-full py-2.5">
-          {isLoading ? 'Signing in…' : 'Sign in'}
+        {CAPTCHA_ENABLED && <Turnstile key={captchaKey} onToken={setCaptchaToken} />}
+
+        <button type="submit" disabled={isLoading || isVerifying} className="btn btn-primary w-full py-2.5">
+          {isLoading ? 'Signing in…' : isVerifying ? 'Verifying…' : 'Sign in'}
         </button>
       </form>
     </div>

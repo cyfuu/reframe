@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -7,14 +7,19 @@ import { useAuth } from '../lib/auth';
 import { formatDate } from '../lib/format';
 import { normalizeTag } from '../lib/tags';
 import { TimelineEntry } from '../components/TimelineEntry';
+import { SuggestionsPanel } from '../components/SuggestionsPanel';
+import { useSuggestions } from '../hooks/useSuggestions';
 import type { Log, ProjectRecord } from '../types';
 
 const ITEMS_PER_PAGE = 10;
 
 export function ProjectTimeline() {
   const { id } = useParams<{ id: string }>();
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') === 'suggestions' ? 'suggestions' : 'timeline';
+  const suggestionsState = useSuggestions(id);
 
   const [project, setProject] = useState<ProjectRecord | null>(null);
   const [logs, setLogs] = useState<Log[]>([]);
@@ -110,7 +115,20 @@ export function ProjectTimeline() {
 
     nodes.forEach((node) => observer.observe(node));
     return () => observer.disconnect();
-  }, [visibleKey]);
+  }, [visibleKey, tab]);
+
+  function selectTab(next: 'timeline' | 'suggestions') {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete('log');
+        if (next === 'suggestions') params.set('tab', 'suggestions');
+        else params.delete('tab');
+        return params;
+      },
+      { replace: true },
+    );
+  }
 
   async function handleDelete(logId: string) {
     if (!window.confirm('Delete this release entry?')) return;
@@ -230,6 +248,44 @@ export function ProjectTimeline() {
         </div>
       </motion.header>
 
+      <div role="tablist" aria-label="Project sections" className="mt-10 flex gap-6 border-b border-line font-mono text-[13px]">
+        {([
+          ['timeline', 'timeline', total],
+          ['suggestions', 'suggestions', suggestionsState.suggestions.length],
+        ] as const).map(([key, label, count]) => {
+          const active = tab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => selectTab(key)}
+              className={`-mb-px border-b-2 pb-2.5 transition-colors ${
+                active ? 'border-accent text-ink' : 'border-transparent text-mute hover:text-ink'
+              }`}
+            >
+              {label} <span className="opacity-60">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === 'suggestions' ? (
+        <div className="mt-8" role="tabpanel">
+          <SuggestionsPanel
+            suggestions={suggestionsState.suggestions}
+            isLoading={suggestionsState.isLoading}
+            loadError={suggestionsState.loadError}
+            currentUserId={user?.id ?? null}
+            isAdmin={isAdmin}
+            onCreate={suggestionsState.create}
+            onDelete={suggestionsState.remove}
+            onReview={suggestionsState.review}
+          />
+        </div>
+      ) : (
+        <div role="tabpanel">
       {logs.length > 0 && tagLabels.length > 1 && (
         <div className="mt-8 flex flex-wrap gap-2 font-mono text-xs" role="group" aria-label="Filter by tag">
           {['All', ...tagLabels].map((tag) => {
@@ -302,6 +358,8 @@ export function ProjectTimeline() {
           <button type="button" onClick={() => void loadMoreLogs()} disabled={isLoadingMore} className="btn">
             {isLoadingMore ? 'loading…' : '↓ load older entries'}
           </button>
+        </div>
+      )}
         </div>
       )}
     </div>
