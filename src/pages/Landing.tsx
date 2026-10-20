@@ -1,6 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../contexts/auth';
+import { useAuth } from '../lib/auth';
 
 const RAW_COMMITS = [
   ['a91c3f2', 'fix typo'],

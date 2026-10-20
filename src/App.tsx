@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
-import { AuthProvider } from './contexts/AuthProvider';
-import { ThemeProvider } from './contexts/ThemeProvider';
+import { AuthProvider } from './providers/AuthProvider';
+import { ThemeProvider } from './providers/ThemeProvider';
 import { AppShell } from './components/AppShell';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';

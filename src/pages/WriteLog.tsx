@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/auth';
+import { useAuth } from '../lib/auth';
 import { normalizeTag, TAG_OPTIONS } from '../lib/tags';
 import type { Log, ProjectRecord } from '../types';
 

@@ -1,8 +1,8 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import logo from '/logo.svg';
-import { useAuth } from '../contexts/auth';
-import { useTheme } from '../contexts/theme';
+import { useAuth } from '../lib/auth';
+import { useTheme } from '../lib/theme';
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/auth';
+import { useAuth } from '../lib/auth';
 import { formatDate } from '../lib/format';
 import { ProjectRow } from '../components/ProjectRow';
 import { NewProjectModal } from '../components/NewProjectModal';

@@ -3,7 +3,7 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/auth';
+import { useAuth } from '../lib/auth';
 import { formatDate } from '../lib/format';
 import { normalizeTag } from '../lib/tags';
 import { TimelineEntry } from '../components/TimelineEntry';

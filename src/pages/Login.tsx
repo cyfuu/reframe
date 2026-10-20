@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/auth';
+import { useAuth } from '../lib/auth';
 
 export function Login() {
   const { isAdmin } = useAuth();
