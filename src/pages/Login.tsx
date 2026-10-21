@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { CAPTCHA_ENABLED } from '../lib/captcha';
-import { Turnstile } from '../components/Turnstile';
+import { Captcha } from '../components/Captcha';
 
 export function Login() {
   const { isAdmin } = useAuth();
@@ -14,6 +14,7 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaKey, setCaptchaKey] = useState(0);
+  const [engaged, setEngaged] = useState(false);
   const isVerifying = CAPTCHA_ENABLED && !captchaToken;
 
   if (isAdmin) {
@@ -48,7 +49,7 @@ export function Login() {
       <h1 className="mt-3 text-2xl font-semibold tracking-tight text-ink">Sign in</h1>
       <p className="mt-2 text-sm text-mute">Manage projects and write release notes.</p>
 
-      <form onSubmit={handleLogin} className="mt-8 space-y-4">
+      <form onSubmit={handleLogin} onFocus={() => setEngaged(true)} className="mt-8 space-y-4">
         <div>
           <label htmlFor="email" className="label">Email</label>
           <input
@@ -82,10 +83,10 @@ export function Login() {
           </p>
         )}
 
-        {CAPTCHA_ENABLED && <Turnstile key={captchaKey} onToken={setCaptchaToken} />}
+        {CAPTCHA_ENABLED && <Captcha key={captchaKey} active={engaged} onToken={setCaptchaToken} />}
 
         <button type="submit" disabled={isLoading || isVerifying} className="btn btn-primary w-full py-2.5">
-          {isLoading ? 'Signing in…' : isVerifying ? 'Verifying…' : 'Sign in'}
+          {isLoading ? 'Signing in…' : isVerifying && engaged ? 'Verifying…' : 'Sign in'}
         </button>
       </form>
     </div>

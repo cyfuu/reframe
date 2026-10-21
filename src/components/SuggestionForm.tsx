@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../lib/auth';
 import { CAPTCHA_ENABLED, CaptchaError } from '../lib/captcha';
 import { KINDS, KIND_META, LIMITS } from '../lib/suggestions';
-import { Turnstile } from './Turnstile';
+import { Captcha } from './Captcha';
 import type { NewSuggestion, SuggestionKind } from '../types';
 
 const LEGACY_NAME_KEY = 'reframe:author-name';
@@ -38,6 +38,7 @@ export function SuggestionForm({ onSubmit }: { onSubmit: (input: NewSuggestion) 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaKey, setCaptchaKey] = useState(0);
   const [forceCaptcha, setForceCaptcha] = useState(false);
+  const [engaged, setEngaged] = useState(false);
   const needsCaptcha = CAPTCHA_ENABLED && (forceCaptcha || (!isAuthLoading && !user));
   const isVerifying = needsCaptcha && !captchaToken;
 
@@ -86,7 +87,7 @@ export function SuggestionForm({ onSubmit }: { onSubmit: (input: NewSuggestion) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-md border border-line bg-surface p-4 sm:p-5" noValidate>
+    <form onSubmit={handleSubmit} onFocus={() => setEngaged(true)} className="rounded-md border border-line bg-surface p-4 sm:p-5" noValidate>
       <h2 className="text-base font-semibold tracking-tight text-ink">Leave a suggestion</h2>
       <p className="mt-1 text-sm text-mute">
         Found a bug or have an idea? No account needed. Everything you post here is public.
@@ -164,13 +165,13 @@ export function SuggestionForm({ onSubmit }: { onSubmit: (input: NewSuggestion) 
         </div>
 
         <button type="submit" disabled={isSubmitting || isVerifying} className="btn btn-primary sm:px-6">
-          {isSubmitting ? 'posting…' : isVerifying ? 'verifying…' : 'post suggestion'}
+          {isSubmitting ? 'posting…' : isVerifying && engaged ? 'verifying…' : 'post suggestion'}
         </button>
       </div>
 
       {needsCaptcha && (
         <div className="mt-4">
-          <Turnstile key={captchaKey} onToken={setCaptchaToken} />
+          <Captcha key={captchaKey} active={engaged} onToken={setCaptchaToken} />
         </div>
       )}
 
