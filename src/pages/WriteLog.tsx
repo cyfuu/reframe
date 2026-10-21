@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { normalizeTag, TAG_OPTIONS } from '../lib/tags';
+import { GITHUB_USERNAME } from '../lib/github';
 import type { Log, ProjectRecord } from '../types';
 
 interface GithubCommit {
@@ -97,7 +98,9 @@ export function WriteLog() {
           }
         });
 
-        const res = await fetch(`https://api.github.com/repos/${projectData.repo_url}/commits?per_page=50`);
+        // A repository you only contributed to has everyone's commits: list just yours.
+        const onlyMine = (projectData as ProjectRecord).role === 'contributor' ? `&author=${GITHUB_USERNAME}` : '';
+        const res = await fetch(`https://api.github.com/repos/${projectData.repo_url}/commits?per_page=50${onlyMine}`);
         if (res.ok) {
           const commitData: GithubCommit[] = await res.json();
           if (!cancelled) {
