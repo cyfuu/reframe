@@ -1,7 +1,9 @@
 import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import logo from '/logo.svg';
+import logoDark from '/logo-dark.svg';
 import { useAuth } from '../lib/auth';
+import { useTheme } from '../lib/theme';
 
 const RAW_COMMITS = [
   ['a91c3f2', 'fix typo'],
@@ -14,6 +16,7 @@ const RAW_COMMITS = [
 
 export function Landing() {
   const { isAdmin } = useAuth();
+  const { theme } = useTheme();
 
   if (isAdmin) {
     return <Navigate to="/projects" replace />;
@@ -28,12 +31,11 @@ export function Landing() {
     >
       <div className="relative isolate">
         <img
-          src={logo}
+          src={theme === 'dark' ? logo : logoDark}
           alt=""
           aria-hidden="true"
           draggable={false}
-          style={{ filter: 'var(--logo-invert)' }}
-          className="pointer-events-none absolute -right-16 -top-6 -z-10 w-64 select-none opacity-[0.07] sm:-right-10 sm:w-80 lg:right-0 lg:top-1/2 lg:w-[26rem] lg:-translate-y-1/2 lg:translate-x-[8%] lg:opacity-90 xl:translate-x-[16%]"
+          className="pointer-events-none absolute -right-16 -top-6 -z-10 w-64 select-none opacity-[0.2] sm:-right-10 sm:w-80 lg:right-0 lg:top-1/2 lg:w-[26rem] lg:-translate-y-1/2 lg:translate-x-[8%] lg:opacity-90 xl:translate-x-[16%]"
         />
 
         <div className="lg:max-w-[36rem]">
