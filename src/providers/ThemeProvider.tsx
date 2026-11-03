@@ -11,7 +11,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
+    const themeColor = theme === 'dark' ? '#0c0e10' : '#eef0f2';
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.backgroundColor = themeColor;
     localStorage.setItem('theme', theme);
     const mobileViewport = window.matchMedia('(max-width: 767px)');
     const updateFavicon = () => {
@@ -24,10 +26,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
     updateFavicon();
     mobileViewport.addEventListener('change', updateFavicon);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute(
-      'content',
-      theme === 'dark' ? '#0c0e10' : '#eef0f2',
-    );
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      const updatedThemeColorMeta = themeColorMeta.cloneNode(true) as HTMLMetaElement;
+      updatedThemeColorMeta.content = themeColor;
+      themeColorMeta.replaceWith(updatedThemeColorMeta);
+    }
 
     return () => mobileViewport.removeEventListener('change', updateFavicon);
   }, [theme]);
