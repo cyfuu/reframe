@@ -16,16 +16,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.backgroundColor = themeColor;
     localStorage.setItem('theme', theme);
     const mobileViewport = window.matchMedia('(max-width: 767px)');
+    const browserDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
     const updateFavicon = () => {
       document.querySelector('link[rel="icon"]')?.setAttribute(
         'href',
         `${import.meta.env.BASE_URL}${
-          mobileViewport.matches ? (theme === 'dark' ? 'logo.svg' : 'logo-dark.svg') : 'logo.svg'
+          mobileViewport.matches && !browserDarkMode.matches ? 'logo-dark.svg' : 'logo.svg'
         }`,
       );
     };
     updateFavicon();
     mobileViewport.addEventListener('change', updateFavicon);
+    browserDarkMode.addEventListener('change', updateFavicon);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
       const updatedThemeColorMeta = themeColorMeta.cloneNode(true) as HTMLMetaElement;
@@ -33,7 +35,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       themeColorMeta.replaceWith(updatedThemeColorMeta);
     }
 
-    return () => mobileViewport.removeEventListener('change', updateFavicon);
+    return () => {
+      mobileViewport.removeEventListener('change', updateFavicon);
+      browserDarkMode.removeEventListener('change', updateFavicon);
+    };
   }, [theme]);
 
   const value = useMemo(
