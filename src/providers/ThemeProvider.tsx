@@ -13,6 +13,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
+    const mobileViewport = window.matchMedia('(max-width: 767px)');
+    const updateFavicon = () => {
+      document.querySelector('link[rel="icon"]')?.setAttribute(
+        'href',
+        `${import.meta.env.BASE_URL}${
+          mobileViewport.matches ? (theme === 'dark' ? 'logo.svg' : 'logo-dark.svg') : 'logo.svg'
+        }`,
+      );
+    };
+    updateFavicon();
+    mobileViewport.addEventListener('change', updateFavicon);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute(
+      'content',
+      theme === 'dark' ? '#0c0e10' : '#eef0f2',
+    );
+
+    return () => mobileViewport.removeEventListener('change', updateFavicon);
   }, [theme]);
 
   const value = useMemo(
