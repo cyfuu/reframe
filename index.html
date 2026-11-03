@@ -23,8 +23,9 @@
     <meta property="twitter:image" content="https://cyfuu.github.io/reframe/og-image.png" />
     <meta name="apple-mobile-web-app-title" content="Reframe" />
     <link rel="apple-touch-icon" href="/reframe/apple-touch-icon.png" />
-    <link rel="icon" type="image/svg+xml" href="/reframe/logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="/reframe/logo-dark.svg" />
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#eef0f2" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -62,10 +63,24 @@
             theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
           }
           document.documentElement.setAttribute('data-theme', theme);
+          document.querySelector('link[rel="icon"]').setAttribute(
+            'href',
+            '/reframe/' + (
+              window.matchMedia('(max-width: 767px)').matches && theme === 'dark'
+                ? 'logo.svg'
+                : window.matchMedia('(max-width: 767px)').matches
+                  ? 'logo-dark.svg'
+                  : 'logo.svg'
+            )
+          );
+          document.querySelector('meta[name="theme-color"]').setAttribute(
+            'content',
+            theme === 'dark' ? '#0c0e10' : '#eef0f2'
+          );
         } catch (e) {}
       })();
     </script>
-    <script type="module" crossorigin src="/reframe/assets/index-fMPrjGcz.js"></script>
+    <script type="module" crossorigin src="/reframe/assets/index-A63BsURp.js"></script>
     <link rel="stylesheet" crossorigin href="/reframe/assets/index-BaFqqxyu.css">
   </head>
   <body>
